@@ -1,8 +1,10 @@
 title = "Reilly Tucker Siemens"
+description = "The canonical web presence of Reilly Tucker Siemens"
 base_url = "https://tuckersiemens.com"
 generate_categories_pages = false
+generate_tags_pages = false
 highlight_code = true
 highlight_theme = "gruvbox-dark"
 
-[extra.author]
-name = "Reilly Tucker Siemens"
+[extra]
+author = "Reilly Tucker Siemens"
