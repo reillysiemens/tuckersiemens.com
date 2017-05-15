@@ -4,6 +4,7 @@ base_url = "https://tuckersiemens.com"
 generate_categories_pages = false
 generate_tags_pages = false
 highlight_code = true
+insert_anchor_links = true
 
 [extra]
 author = "Reilly Tucker Siemens"
