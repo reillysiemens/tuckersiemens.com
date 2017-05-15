@@ -283,7 +283,7 @@ Not <em>quite</em> there yet. <a href='messed-up-git-graph.png'>View full size.<
 # Success
 ---------
 For the third time [Stack Overflow saves my bacon] and
-```
+```bash
 git update-ref -d refs/original/refs/heads/master
 ```
 
