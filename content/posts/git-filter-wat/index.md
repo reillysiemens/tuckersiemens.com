@@ -15,7 +15,12 @@ added [GPG signature verification]. All you have to do is upload your
 [public key] to GitHub and you'll be verifying commits like a champ. Or so I
 thought…
 
-![Signature Doesn't Match Commiter](signature-doesnt-match-committer.png)
+<figure>
+<img src='signature-doesnt-match-committer.png' alt="Signature Doesn't Match Committer">
+<figcaption>
+Unverified commits on GitHub. <a href='signature-doesnt-match-committer.png'>View full size.</a>
+</figcaption
+</figure>
 
 GitHub thinks I'm unverified. I think that's some baloney. I _know_ the public
 key I uploaded matches the private key I used to sign those commits. Oh, it
@@ -53,7 +58,13 @@ Reckless reading leads me to this potential solution.
 git filter-branch -f --env-filter "GIT_AUTHOR_EMAIL='reilly@tuckersiemens.com'" HEAD
 ```
 
-![git filter-wat](git-filter-wat.png)
+<figure>
+<img src='git-filter-wat.png' alt='git-filter-wat'>
+<figcaption>
+A royally screwed up commit log. <a href='git-filter-wat.png'>View full size.</a>
+</figcaption
+</figure>
+
 
 Oh. No. Something is _clearly_ wrong. Looks more like `git filter-wat`.
 
@@ -114,7 +125,12 @@ feel comfortable taking the sledgehammer approach.
 
 # Back to Square One
 --------------------
-![Signature Doesn't Match Committer](signature-doesnt-match-committer.png)
+<figure>
+<img src='signature-doesnt-match-committer.png' alt="Signature Doesn't Match Committer">
+<figcaption>
+These commits are <em>still</em> unverified on GitHub. <a href='signature-doesnt-match-committer.png'>View full size.</a>
+</figcaption
+</figure>
 
 Well, that didn't change anything. What gives? What am I missing? How does
 GitHub expect this to work in the first place? New idea. What if I set my
@@ -129,7 +145,12 @@ git commit -Sm "Why doesn't this work?"
 git push --force origin master
 ```
 
-![Oh, but it does!](oh-but-it-does.png)
+<figure>
+<img src='oh-but-it-does.png' alt='Oh, but it does!'>
+<figcaption>
+Oh, but it <em>does</em> work! <a href='oh-but-it-does.png'>View full size.</a>
+</figcaption
+</figure>
 
 Now I think I'm crazy. This works, but _why_? Something **must** be different,
 but what is it? Let's check the `git log` again.
@@ -252,7 +273,12 @@ Add cookiecutter configuration.
 Unfortunately, now the graph of my `git log` looks weird. I have double the
 commits!
 
-![Messed Up Git Graph](messed-up-git-graph.png)
+<figure>
+<img src='messed-up-git-graph.png' alt='Messed Up Git Graph'>
+<figcaption>
+Not <em>quite</em> there yet. <a href='messed-up-git-graph.png'>View full size.</a>
+</figcaption
+</figure>
 
 # Success
 ---------
@@ -264,7 +290,12 @@ git update-ref -d refs/original/refs/heads/master
 cleans up my graph. Now I can force push to `origin master` _again_ and
 everything will be right again.
 
-![Verified Commits](verified-commits.png)
+<figure>
+<img src='verified-commits.png' alt='Verified Commits'>
+<figcaption>
+Verified commits on GitHub. Success! <a href='verified-commits.png'>View full size.</a>
+</figcaption
+</figure>
 
 [dotfiles]: https://github.com/reillysiemens/dotfiles
 [GPG signature verification]: https://github.com/blog/2144-gpg-signature-verification
