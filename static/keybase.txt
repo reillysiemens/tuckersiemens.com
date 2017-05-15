@@ -1,0 +1,82 @@
+==================================================================
+https://keybase.io/reillysiemens
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://tuckersiemens.com
+  * I am reillysiemens (https://keybase.io/reillysiemens) on keybase.
+  * I have a public key with fingerprint EA26 C944 1A6C 40E4 0E73  B4EC 1B45 8E7C 7CB1 54A9
+
+To do so, I am signing this object:
+
+{
+    "body": {
+        "client": {
+            "name": "keybase.io node.js client",
+            "version": "0.7.5"
+        },
+        "key": {
+            "fingerprint": "ea26c9441a6c40e40e73b4ec1b458e7c7cb154a9",
+            "host": "keybase.io",
+            "key_id": "1B458E7C7CB154A9",
+            "uid": "eb4bae03913d61f8dbaecec09f80f300",
+            "username": "reillysiemens"
+        },
+        "merkle_root": {
+            "ctime": 1429866644,
+            "hash": "e0d63404eea56d53642bc5843899d777ab377056b09c5e7bb71264f686bed4ebf84e74a7a8eb3bcce875a736563ddb16b8dc8e64407c1faf37954a0e44a29570",
+            "seqno": 209926
+        },
+        "service": {
+            "hostname": "tuckersiemens.com",
+            "protocol": "https:"
+        },
+        "type": "web_service_binding",
+        "version": 1
+    },
+    "ctime": 1429866655,
+    "expire_in": 157680000,
+    "prev": "2fc94aa693b2d1a220a6dfe6d250809aab5495ba850356e72d03998d8763e716",
+    "seqno": 39,
+    "tag": "signature"
+}
+
+which yields the signature:
+
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v2
+
+owFdkntQFVUcxwHTkAli5CGJpm1SqQzu8+zuDZoAHQokwGCkgLmes3suLI+717v3
+8hBuNJSOxYwCyjNEM0EaJwswJrMZ5BED0oMgEsTBGXVUBGdUfDQ5UrsMTY8z+8c5
+ez6/7+/3/f1OhfcSNw/34K37S0rakj93H5pGbikmzyPFBFLlIsJUTEi5CrY6jJ0V
+5mHCROTgIgQ1HKao66yqjMOytXWLTCiRj+2aolp1igzjwzjCFWrgRrBFsWZiu82u
+GFoEhjSQRJalIJBYEusfzyAWSxRiOQHzEi8himOhqEtmqZrjP1mJBU2zIut/qSid
+38pH89FROh9p8M6FC4xYBDHJiBQjA8oiyPpJwhIpWgTSwpCkAWrYvmjJjpXc3CJN
+wXnYqhlF52F7Ti4221V1wbnkUAyOYmlRAACwrF4W1LKMPKQMGJZkMYYckDkGsDSS
+OIFlBFGUeZ6HiOF5kgOIFCUO8wjxFA1YCxAAwjKLkUVgMc9CHgoYMUiSsMBzkGcA
+BxhZRhRAgiwJWM9I8hJlgRaGF/W+6B1jIS1yvOFDw7usKmGiSVGkgcs42/MVCRt1
+G71btOhwSjnGcBYshklqnh5ps6sOVVJz9essh8OmmQzrZxxFNiOgACPzopQZKVZZ
+n9+/B0zp6P/awnGhBC60KXZsVgyC44FA6stIhPN1SdqizxxCIDKIlilI0yQEsgUD
+meZIgRQhRBwrcggKHMlwAPO0rA9QFGSBBwzmKfCPWUYMJRwwU9fUlEwrdDjtmHB9
+5LH6KTd3D7dlSz2MJ+zmtdz373c9ctTX7XjvsaiJMVS1q6JPLpkJeHK8o6g9/7U/
+fc5eS2xRAiK+OPhZGrFFVR6/DjegNd53/5iLVHePdAWP1JMDE/1Nxzbv/bY5zhZI
+zFb7ppcWSVeeHXQNQ1fjzHB5Z5LPvam15fs/LM7a26V1HZxMfyGjNPz9edT6/TPj
+c/FPKpNnU6PiY+JP3a1Ju1lxO2zl7QDbxd9PvHLO78seT+W5lx9S2RkhiaaX3pge
+W4LO91zwKqu49vb0YPV41cTHcUmxsTEtLS9qDW2zYw8P3DsyKp+ZTH++vKB228z2
+5DeTuiamX3XUXf457daB6k/mmh94Td2vs9TFlx4+nXD7pHAxpj4R3v1uvjf1xLuX
+BzZvd86UtkzdTIisT63daC+81DlaadoZiOev7gv64Zss6kLNjbLrV5ed7/QJVHz9
+Sk5zO/qTen+LWNUY51yRMThX3QdDhwtii9lNYlXkoeD+X8fvfRW4vpyt+6W0z/RB
+fnx0dPfaB0ebGvbYUobYMk9tU3jXeEVffPudiMOtA+tvmMse/RjkvXRVlEpGt7ra
+x84OZdf03hA8rKk/3W8FY9u6H0+OiiFPX38nZLA3ZnvT11GpG9+64+8XvK9yx60N
+59jKFPHWxCkqIbJxdf8W1/KV7o4VHbUh4WsCOm5Wzp1sejQ6fOm9+aQrzXt27h08
+9GlDm9O9LNPfGRPUbYYm/xO7ewqL/wI=
+=JQ/H
+-----END PGP MESSAGE-----
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/reillysiemens
+
+==================================================================
