@@ -6,27 +6,35 @@
     <meta name='description' content='{{ config.description }}'>
     <meta name='author' content='{{ config.extra.author }}'>
     <title>{{ config.title }}</title>
-    <link rel='stylesheet' href='/normalize.css'>
+    <link rel='dns-prefetch' href='https://fonts.googleapis.com/'>
     <link rel='stylesheet' href='/main.css'>
   </head>
   <body>
-    <main>
+    <div class='site-container'>
       <header class='site-header'>
         <h1 class='site-title'><a href='{{ config.base_url }}'>{{ config.title }}</a></h1>
         <nav class='site-nav'>
-          <a href='{{ config.base_url }}/projects' class='{% if page %}{% if page.url == "&#x2F;projects" %}active{% endif %}{% endif %}'>Projects</a>
-          <a href='{{ config.base_url }}/resume' class='{% if page %}{% if page.url == "&#x2F;resume" %}active{% endif %}{% endif %}'>Résumé</a>
-          <a href='{{ config.base_url }}/about' class='{% if page %}{% if page.url == "&#x2F;about" %}active{% endif %}{% endif %}'>About</a>
+          <a href='{{ config.base_url }}/' class='{% if not page.path %}active{% endif %}'>Posts</a>
+          <a href='{{ config.base_url }}/projects' class='{% if page %}{% if page.path == "&#x2F;projects" %}active{% endif %}{% endif %}'>Projects</a>
+          <a href='{{ config.base_url }}/resume' class='{% if page %}{% if page.path == "&#x2F;resume" %}active{% endif %}{% endif %}'>Résumé</a>
+          <a href='{{ config.base_url }}/about' class='{% if page %}{% if page.path == "&#x2F;about" %}active{% endif %}{% endif %}'>About</a>
         </nav>
       </header>
-    {% block content %}
-      <ul class='posts'>
+      <main class='site-content'>
+      {% block content %}
+        <ul class='posts'>
         {% for page in pages %}
           {% if page.date %}
             <li><span class='post-meta'>{{ page.date | date(format="%Y-%m-%d") }}</span><a href='{{ page.permalink }}'>{{ page.title }}</a></li>
           {% endif %}
         {% endfor %}
-    {% endblock content %}
-    </main>
+        </ul>
+      {% endblock content %}
+      </main>
+      <footer class='site-footer'>
+        <div class='copyright'>© 2017 Reilly Tucker Siemens</div>
+        <div class='powered-by'>Powered by <a href='https://github.com/Keats/gutenberg'>gutenberg</a></div>
+      </footer>
+    </div>
   </body>
 </html>
