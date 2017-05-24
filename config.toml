@@ -3,6 +3,7 @@ description = "The canonical web presence of Reilly Tucker Siemens."
 base_url = "https://tuckersiemens.com"
 generate_categories_pages = false
 generate_tags_pages = false
+generate_rss = true
 highlight_code = true
 insert_anchor_links = true
 
