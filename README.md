@@ -12,7 +12,7 @@ The canonical web presence of Reilly Tucker Siemens.
 ### Steps
 1. Clone this site and enter the directory.
    ```bash
-   git clone https://github.com/reillysiemens/tuckersiemens.com
+   git clone git@github.com:reillysiemens/tuckersiemens.com.git
    cd tuckersiemens.com
    ```
 2. Install the latest [gutenberg] from source.
