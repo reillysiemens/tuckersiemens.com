@@ -15,9 +15,13 @@ The canonical web presence of Reilly Tucker Siemens.
    git clone https://github.com/reillysiemens/tuckersiemens.com
    cd tuckersiemens.com
    ```
-2. Install [gutenberg].
+2. Install the latest [gutenberg] from source.
    ```bash
-   cargo install --git https://github.com/Keats/gutenberg --tag v0.0.4
+   git clone git@github.com:Keats/gutenberg.git /tmp/gutenberg
+   pushd /tmp/gutenberg
+   git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
+   cargo install  # This might take a minute. Grab some coffee.
+   popd
    ```
 3. Install the Sass development environment.
    ```bash
