@@ -1,7 +1,7 @@
 +++
 title = "git filter-wat"
 description = ""
-url = "2016/04/07/git-filter-wat"
+url = "posts/git-filter-wat"
 date = "2016-04-07T16:06:33-08:00"
 tags = ["GitHub", "PGP", "Git"]
 +++

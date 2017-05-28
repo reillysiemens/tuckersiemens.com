@@ -1,7 +1,6 @@
 +++
 title = "hexo init blog"
 description = ""
-url = "2015/04/24/hexo-init-blog"
 date = "2015-04-24T01:57:13-08:00"
 tags = ["hacks", "Hexo", "blogging"]
 +++
