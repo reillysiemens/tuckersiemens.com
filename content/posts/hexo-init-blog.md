@@ -1,6 +1,6 @@
 +++
 title = "hexo init blog"
-description = ""
+description = "Hello World!"
 date = "2015-04-24T01:57:13-08:00"
 tags = ["hacks", "Hexo", "blogging"]
 +++

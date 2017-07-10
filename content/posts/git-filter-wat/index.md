@@ -1,6 +1,6 @@
 +++
 title = "git filter-wat"
-description = ""
+description = "Fighting git filter-branch and GPG."
 url = "posts/git-filter-wat"
 date = "2016-04-07T16:06:33-08:00"
 tags = ["GitHub", "PGP", "Git"]

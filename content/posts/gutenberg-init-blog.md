@@ -1,6 +1,6 @@
 +++
 title = "gutenberg init blog"
-description = ""
+description = "Switching to Gutenberg as my static site generator."
 date = "2017-06-18T15:17:00-08:00"
 tags = ["gutenberg", "Rust", "blogging"]
 +++

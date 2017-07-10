@@ -3,7 +3,11 @@
   <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <meta name='description' content='{{ config.description }}'>
+    {% if page %}
+      <meta name='description' content='{{ page.description }}'>
+    {% else %}
+      <meta name='description' content='{{ config.description }}'>
+    {% endif %}
     <meta name='author' content='{{ config.extra.author }}'>
     <title>{{ config.title }}</title>
     <link rel='dns-prefetch' href='https://fonts.googleapis.com/'>
