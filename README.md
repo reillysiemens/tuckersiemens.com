@@ -6,8 +6,6 @@ The canonical web presence of Reilly Tucker Siemens.
 
 ### Prerequisites:
 - [Rust] and [cargo].
-- [Node.js] and [yarn].
-- [gulp]
 
 ### Steps
 1. Clone this site and enter the directory.
@@ -23,18 +21,11 @@ The canonical web presence of Reilly Tucker Siemens.
    cargo install  # This might take a minute. Grab some coffee.
    popd
    ```
-3. Install the Sass development environment.
-   ```bash
-   yarn install
-   ```
-4. Build the site!
+3. Build the site!
    ```
    make build
    ```
 
 [Rust]: https://www.rust-lang.org
 [cargo]: https://crates.io/install
-[Node.js]: https://nodejs.org
-[yarn]: https://yarnpkg.com
-[gulp]: http://gulpjs.com
 [gutenberg]: https://github.com/Keats/gutenberg

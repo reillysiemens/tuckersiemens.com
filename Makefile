@@ -8,5 +8,4 @@ clean:
 	rm -rf ./$(BUILD_DIR)/*
 
 build:
-	gulp sass
 	gutenberg build
