@@ -1,5 +1,5 @@
 +++
 sort_by = "date"
 render = false
-insert_anchor = "right"
+insert_anchor_links = "right"
 +++
