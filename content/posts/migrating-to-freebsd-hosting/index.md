@@ -10,20 +10,27 @@ tags = ["FreeBSD", "hosting"]
 # How This Site Is Hosted
 
 In a time when things like AWS S3 and Cloudflare are commonplace it might
-surprise you to hear that this site is hosted by a server I manage directly.
-I've done it this way for the last few years and I don't think I'll stop
-anytime soon.
-
-- Lets me keep my sysadmin skills sharp.
-- Migrated from Debian Jessie.
+surprise you to hear that this simple static site is hosted by a server I
+manage directly. I've done it this way for the last few years and I don't
+think I'll stop anytime soon. If nothing else, it provides a way for me to keep
+my sysadmin skills sharp.
 
 # Why FreeBSD?
 
-- Dedicated community
-- Tight integration between userland and kernel?
-- [ZFS][ZFS]
-- [Jails][FreeBSD jails]
-- Both [source and binary package management][FreeBSD Software].
+Prior to migrating in July this site was hosted using Debian Jessie. That was
+working well enough, but I was attracted to FreeBSD for several reasons. First,
+both the kernel and userland are developed in concert as a single operating
+system rather than separately like Linux and GNU. As a result it seems like the
+community has a more cohesive vision about what they're trying to build.
+Second, FreeBSD also has built-in [ZFS][ZFS] support (with no licensing
+concerns). Third, it has a powerful system for securing/virtualizing
+applications in [jails][FreeBSD jails]. Finally, it supports both
+[source and binary package management][FreeBSD Software].
+
+These features combined make for an excellent server platform. What more could
+one ask for than a dedicated community, a rock-solid filesystem, lightweight
+application segmentation, and the flexibility to install software as you see
+fit?
 
 # Users and Authentication
 
@@ -53,6 +60,8 @@ DigitalOcean does some nonsense that allows root logins just to print out a
 message that tells you to use the `freebsd` user instead, so I explicitly
 disable that as well.
 
+# TODO: ADD SOMETHING ABOUT `AllowUsers` HERE
+
 As a final step, I run `sshd` on a non-standard port because it cuts a lot of the bot 
 chatter out of my logs, but it's security through obscurity won't stop someone
 who's serious about attempting to login from making a connection.
@@ -62,6 +71,7 @@ PasswordAuthentication no
 ChallengeResponseAuthentication no
 UsePam no
 PermitRootLogin no
+AllowUsers $INSERT FANCY USERNAME HERE YO
 Port 1337
 ```
 
@@ -100,6 +110,7 @@ sudo reboot
 ```
 
 # Basic Firewall
+- This also requires some `cloned_interface` business in `/etc/rc.conf`...
 - This doesn't really make sense without setting up the jail.
 - Maybe explain with comments?
 
