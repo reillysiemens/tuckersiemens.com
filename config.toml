@@ -5,6 +5,7 @@ generate_categories_pages = false
 generate_tags_pages = false
 generate_rss = true
 highlight_code = true
+highlight_theme = "gruvbox-dark"
 compile_sass = true
 
 [extra]
