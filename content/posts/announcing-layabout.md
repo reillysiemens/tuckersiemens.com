@@ -1,12 +1,12 @@
 +++
 title = "Announcing Layabout"
 description = "Announcing Layabout, an event handler for the Slack RTM API."
-date = "2018-02-18T01:36:00-08:00"
+date = "2018-06-30T00:16:52-07:00"
 tags = ["Slack", "Python", "Layabout"]
 +++
 # Event Handling for the Slack RTM API
 
-Today I'm publishing [Layabout], my first official Python library, to [PyPI].
+Today I'm announcing [Layabout], my first official Python library, to [PyPI].
 Layabout is a small event handling library on top of the
 [Slack Real Time Messaging (RTM) API][Slack RTM API]. If you want to grab it
 off the shelf and start playing with it as you read this blog post you can
@@ -16,8 +16,8 @@ install it by running
 pip install layabout
 ```
 
-in your terminal of choice. Once you've got Layabout installed let's take a
-look at what it's capable of by borrowing the code example right from its
+Once you've got Layabout installed let's take a look at what it's capable of by
+borrowing the code example right from its
 `README.rst`.
 
 
@@ -25,16 +25,16 @@ look at what it's capable of by borrowing the code example right from its
 from pprint import pprint
 from layabout import Layabout
 
-layabout = Layabout('app')
+app = Layabout()
 
 
-@layabout.handle('*')
+@app.handle('*')
 def debug(slack, event):
     """ Pretty print every event seen by the app. """
     pprint(event)
 
 
-@layabout.handle('message')
+@app.handle('message')
 def echo(slack, event):
     """ Echo all messages seen by the app except our own. """
     if event.get('subtype') != 'bot_message':
@@ -43,20 +43,23 @@ def echo(slack, event):
 
 def someone_leaves(events):
     """ Return False if a member leaves, otherwise True. """
-    return not any(e.get('type') == 'member_left_channel' for e in events)
+    return not any(e.get('type') == 'member_left_channel'
+                   for e in events)
+
 
 if __name__ == '__main__':
-    layabout.run(until=someone_leaves)
-    print("Don't talk to me or my handlers ever again!")
+    # Automatically load app token from $LAYABOUT_TOKEN and run!
+    app.run(until=someone_leaves)
+    print("Looks like someone left a channel!")
 ```
 
-In 25 lines of code we've used Layabout to do the following:
+In 28 lines of code we've used Layabout to do the following:
 - Register a `debug` handler that triggers on **all** RTM events to pretty
   print them.
 - Register an `echo` handler that triggers on `message` events to echo them
   back into the channel they came from (unless of course we generated them).
-- Load our application token from an environment variable (`SLACK_API_TOKEN`
-  by default).
+- Load our application token from an environment variable (`$LAYABOUT_TOKEN` by
+  default).
 - Connect to the Slack API.
 - Continuously listen for events, calling the appropriate handlers until
   `someone_leaves` a channel we have access to.
@@ -87,9 +90,10 @@ More concretely, I think Python decorators are a powerful combination of
 simplicity and flexibility. They also lend themselves particularly well to
 event-driven workflows.
 
-The heart of Layabout is its aggressively simple `Layabout.handle` method. Its 
-normal invocation just guarantees the decorated function will accept a
-`SlackClient` and an event as arguments before registering it as a particular
+The heart of Layabout is its aggressively simple
+[`Layabout.handle`][layabout-handle] method. Its normal invocation just
+guarantees the decorated function will accept a `SlackClient` and an event as
+arguments before registering it as a particular
 type of handler.
 
 Having access to those two arguments alone opens up a wealth of possibilities.
@@ -99,20 +103,23 @@ a `SlackClient` instance meant I didn't have to write my own functions for
 calling out to the RTM API and I could also take advantage of its ability to
 call the [Slack Web API] as well.
 
-I also took inspiration from [pytest]'s `pytest.mark.parametrize` decorator to
-give handlers more versatility by adding an extra `kwargs` parameter.
+I also took inspiration from [pytest]'s
+[`pytest.mark.parametrize`][pytest-parametrize] decorator to give handlers more
+versatility by adding an extra `kwargs` parameter.
 
 ```python
 from layabout import Layabout
 
-layabout = Layabout('app')
+app = Layabout()
 
 if __name__ == '__main__':
-    foo = input('Please input a foo: ')
+    name = input('What is your name? ')
 
-    @layabout.handle('hello', kwargs={'foo': foo})
-    def hello(slack, event, foo):
-        print(f"Hello! My foo is {foo}.")
+    @app.handle('hello', kwargs={'name': name})
+    def hello(slack, event, name):
+        print(f"Hello! My name is {name}.")
+
+    app.run()  # Run forever.
 ```
 
 By adding a `kwargs` parameter we can not only use `Layabout.handle` as a
@@ -123,24 +130,30 @@ channels:
 ```python
 from layabout import Layabout
 
-layabout = Layabout('app')
+app = Layabout()
 
 
 def log_for_channels(slack, event, channels):
+    """ Log the event if it happened in a channel we care about. """
     if event['channel'] in channels:
         print(f"{event['type']} happened in {event['channel']}!")
 
 
 if __name__ == '__main__':
+    # A mapping of events to their respective channels.
     event_channels = (
         ('star_added', ('G1A8FG8AE', 'C03QZSL29')),
         ('star_removed' ('C47CSFJRK', 'C045BMR29', 'G13RTMGXY')),
     )
+
+    # For each event register a new handler for specific channels.
     for event, channels in event_channels:
-        layabout.handle(event, kwargs={'channels': channels})(log_for_channels)
+        app.handle(event, kwargs={'channels': channels})(log_for_channels)
+
+    app.run()  # Run forever.
 ```
 
-You could also use a closure or default arguments on a normal function
+You could also use a [closure] or default arguments on a normal function
 definition for this and it might look a little cleaner, but for passing runtime
 data to a lot of functions those can be tedious options.
 
@@ -156,7 +169,9 @@ specifically chose to use only the most recent Python for three reasons:
    annotations, f-strings, better destructuring assignment, etc.
 2. I didn't want to limit myself to the least common denominator by worrying
    about backwards compatibility.
-3. [2020] is fast approaching, folks. Use Python 3 already.
+3. [2020] is fast approaching, folks. Use Python 3 already. If you intend to
+   keep Python as part of your stack you're rapidly running out of excuses not
+   to modernize.
 
 I normally try to drink as little of the Object Oriented Kool-Aid as possible,
 so I tried a functional approach first, but keeping track of what was going on
@@ -168,26 +183,73 @@ global mutable state.
 
 ## Async
 
-- Unfortunately couldn't use `async def` because of `slackclient`.
+Unfortunately I didn't see an easy way to use Python 3's
+[`async def`][async-def] because of the synchronous nature of `slackclient`'s
+`SlackClient.rtm_read` method. This is a Python 3 feature I'd really like to
+learn more about and event handling and async seem like a natural fit to me. If
+there's ever a reason to release a Layabout v2.0 I will probably push harder in
+this direction.
 
 ## Type Annotations
 
-The best part about this entire project so far has been learning how to use
-Python 3 type annotations. Type annotations are **awesome**! Go use them!
+From a development stance, the best part about this entire project so far has
+been learning how to use Python 3 [type annotations]. I miss
+them whenever I'm working with a project that doesn't have them.
 
-- Type annotations.
-  - Annoyance with `Callable`.
+I did have one minor annoyance while working with type annotations. Layabout
+keeps an internal collection of all the event handlers that have been
+registered to it with this signature.
 
 ```python
-# Sadly, this doesn't work.
+# Private type alias for the complex type of the handlers defaultdict.
+_Handlers = DefaultDict[str, List[Tuple[Callable, dict]]]
+```
+
+I wanted to be even more restrictive and specify exactly what was required
+of the [`Callable`][callable] by defining a [type alias] for a `Handler`. The
+restrictions I sought to specify were:
+- A handler must take at least two positional arguments:
+  - The first argument must be a `SlackClient`.
+  - The second argument must be a dictionary of arbitrary types keyed by string
+    (`Dict[str, Any]`) as that's what the Slack RTM API events are.
+- If the required arguments are satisfied a handler _may_ take any number of
+  additional arguments of `Any` type.
+- A handler can return `Any` type.
+
+I took a stab at expressing this as
+
+```python
 Handler = Callable[[SlackClient, Dict[str, Any], ...], Any]
 ```
 
+Sadly, it would seem this doesn't work. Right now [mypy] complains with a
+
+```
+error: Unexpected '...'
+```
+
+I've been up and down the [Python typing project][python-typing], but even
+after visiting [issue #193][issue-193] and [issue #264][issue-264] can't find a
+simple syntax for expressing a function that has a minimum arity of two with
+required types, but is [variadic] thereafter and [generic] in the types it
+accepts.
+
+There may, in fact, be a way to express this type with current annotations, but
+I haven't figured out what it is yet. It may also be the case that the
+difficulty in expressing this type is an indicator that a better API exists and
+should be preferred. For now I've settled on just declaring that a `Handler` is
+a `Callable`. I've got an auxiliary function that validates handlers to let
+users know if they've omitted a required positional argument.
+
+Despite that small inconvenience type annotations are **awesome**! Go use them!
+I now firmly believe that supplemental static analysis makes for better
+software, even in dynamically typed languages.
+
 ## Run Method
 
-As a final note, the `Layabout.run` method only has an `until` parameter
-because it made it **so** much easier for me to unit test. If you go read the
-tests you'll notice most of them get called with
+As a final note on implementation, the [`Layabout.run`][layabout-run] method
+only has an `until` parameter because it made it **so** much easier for me to
+unit test. If you go read the [tests] you'll notice many of them get called with
 
 ```python
 layabout.run(until=lambda e: False)
@@ -213,21 +275,36 @@ links to get started.
 - 🐛 [Bug Reports / Issues]
 - 💾 [Source Code]
 
-I _happily_ accept pull requests, so if something's not quite right feel free
-to jump in and submit your own fix if you're able. Happy Slacking!
+I _happily_ entertain pull requests, so if something's not quite right feel
+free to jump in and submit your own fix if you're able. Happy Slacking!
 
 [Layabout]: https://github.com/reillysiemens/layabout
-[PyPI]: https://pypi.python.org/pypi
+[PyPI]: https://pypi.org/project/layabout
 [Slack RTM API]: https://api.slack.com/rtm
 [Slack Events API]: https://api.slack.com/events-api
 [events library]: https://github.com/slackapi/python-slack-events-api
 [events]: https://api.slack.com/events
 [Flask]: http://flask.pocoo.org/
+[layabout-handle]: https://layabout.readthedocs.io/en/latest/api.html#layabout.Layabout.handle
+[closure]: https://en.wikipedia.org/wiki/Closure_(computer_programming)
 [slackclient]: https://github.com/slackapi/python-slackclient
 [Slack Web API]: https://api.slack.com/web
 [pytest]: https://docs.pytest.org/en/latest/
+[pytest-parametrize]: https://docs.pytest.org/en/latest/parametrize.html
 [Armin Ronacher]: http://lucumr.pocoo.org/about/
 [2020]: https://www.python.org/dev/peps/pep-0373/#id2
-[Documentation]: https://layabout.readthedocs.io/en/latest.html
+[async-def]: https://docs.python.org/3/reference/compound_stmts.html#async-def
+[type annotations]: https://www.python.org/dev/peps/pep-0484/
+[type alias]: https://docs.python.org/3/library/typing.html#type-aliases
+[mypy]: https://github.com/python/mypy
+[python-typing]: https://github.com/python/typing
+[issue-193]: https://github.com/python/typing/issues/193
+[issue-264]: https://github.com/python/typing/issues/264
+[variadic]: https://en.wikipedia.org/wiki/Variadic_function
+[generic]: https://en.wikipedia.org/wiki/Generic_programming
+[callable]: https://docs.python.org/3/library/typing.html#callable
+[layabout-run]: https://layabout.readthedocs.io/en/latest/api.html#layabout.Layabout.run
+[tests]: https://github.com/reillysiemens/layabout/blob/ed617cdfec4ec31b681f51697f922d4979f83cb6/tests/test_layabout.py
+[Documentation]: https://layabout.readthedocs.io/en/latest/
 [Bug Reports / Issues]: https://github.com/reillysiemens/layabout/issues
-[Source Code]: https://github.com/reillysiemens/
+[Source Code]: https://github.com/reillysiemens/layabout/
