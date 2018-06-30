@@ -11,6 +11,8 @@ growth as a programmer.
 
 These are the projects I take some measure of pride in:
 
+- [Layabout](https://github.com/reillysiemens/layabout): A small event handling
+  library on top of the Slack RTM API.
 - [My dotfiles](https://github.com/reillysiemens/dotfiles): The configuration
   files that keep me from flipping a table after logging in.
 - [This website](https://github.com/reillysiemens/tuckersiemens.com): You're
