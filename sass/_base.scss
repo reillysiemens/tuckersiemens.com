@@ -18,6 +18,9 @@ a {
   &:not(.anchor):hover {
     text-decoration: underline;
   }
+  code {
+    color: $link-color;
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {
