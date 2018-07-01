@@ -6,11 +6,44 @@ tags = ["Slack", "Python", "Layabout"]
 +++
 # Event Handling for the Slack RTM API
 
-Today I'm announcing [Layabout], my first official Python library, to [PyPI].
-Layabout is a small event handling library on top of the
-[Slack Real Time Messaging (RTM) API][Slack RTM API]. If you want to grab it
-off the shelf and start playing with it as you read this blog post you can
-install it by running
+Today I'm announcing [Layabout], my first official Python library. Layabout is
+a small event handling library on top of the
+[Slack Real Time Messaging (RTM) API][Slack RTM API]. You can get it right now
+on [PyPI].
+
+# What's It Good For?
+
+You can think of Layabout as a micro framework for building Slack bots. Since
+it wraps Slack’s RTM API it does best with tasks like interacting with users,
+responding to channel messages, and monitoring events. If you want more ideas
+on what you can do with it keep reading or check out the [examples].
+
+# Why?
+
+Why choose Layabout when the [Slack Events API] exists and there's already an
+officially supported [events library]? If these points resonate with you then
+Layabout is for you.
+
+- You don't want set up Flask or a similar framework.
+- You don't want to configure a reverse proxy.
+- You don't want to acquire an SSL certificate.
+- You don't want to do any of the myriad tasks associated with best practices
+  in hosting a web app just to respond to Slack events.
+- You're satisfied with the large set of [events] supported by the
+  [RTM API][Slack RTM API].
+
+# Why Not?
+
+Layabout won't be for everone and that's OK. If these points resonate with you
+then you probably _do_ want to use the official events library.
+
+- You can't afford to have a persistent WebSocket connection in your
+  application.
+
+# A Practical Example
+
+If you want to download it and start playing with it as you read the rest of
+this blog post you can install it by running
 
 ```bash
 pip install layabout
@@ -64,21 +97,8 @@ In 28 lines of code we've used Layabout to do the following:
 - Continuously listen for events, calling the appropriate handlers until
   `someone_leaves` a channel we have access to.
 
-# Why?
-
-Why Layabout when the [Slack Events API] exists and there's already an
-officially supported [events library]?
-
-Simply put, if you don't want to run a web server so Slack can call you when
-events happen, then Layabout is for you.
-
-Most [events] are supported by the [RTM API][Slack RTM API] as well and
-Layabout enables you to start handling events quickly without worrying about
-setting up Flask, configuring a reverse proxy, acquiring an SSL certificate,
-and the myriad other tasks that come with hosting a web app.
-
-That said, if you can't afford to have a persistent WebSocket connection to the
-Slack API, then you probably _do_ want the official events library.
+Now that we've looked at what Layabout is, why you might want to use it, and
+how to use it let's look a bit deeper into its design and implementation.
 
 # Design
 
@@ -278,9 +298,10 @@ links to get started.
 I _happily_ entertain pull requests, so if something's not quite right feel
 free to jump in and submit your own fix if you're able. Happy Slacking!
 
-[Layabout]: https://github.com/reillysiemens/layabout
+[Layabout]: https://layabout.readthedocs.io/en/latest/
 [PyPI]: https://pypi.org/project/layabout
 [Slack RTM API]: https://api.slack.com/rtm
+[examples]: https://github.com/reillysiemens/layabout/tree/master/examples
 [Slack Events API]: https://api.slack.com/events-api
 [events library]: https://github.com/slackapi/python-slack-events-api
 [events]: https://api.slack.com/events
