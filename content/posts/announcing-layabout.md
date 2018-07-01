@@ -287,6 +287,13 @@ def _forever(events: List[Dict[str, Any]]) -> bool:  # pragma: no cover
 Giving the looping conditional access to the events opened up enough
 possibilities that I decided to keep it as part of the design.
 
+# Thanks
+
+I want to extend a special thank you to [Alex LordThorsen], [Geoff Shannon],
+[Kyle Rader], and [Mike Canoy] for their help during the initial development of
+this library. In particular the feedback I got on [PR #2][pr-2] was incredible
+and radically changed the library for the better.
+
 # What's Next?
 
 If you're still here and Layabout sounds like fun to you then check out these
@@ -326,6 +333,11 @@ free to jump in and submit your own fix if you're able. Happy Slacking!
 [callable]: https://docs.python.org/3/library/typing.html#callable
 [layabout-run]: https://layabout.readthedocs.io/en/latest/api.html#layabout.Layabout.run
 [tests]: https://github.com/reillysiemens/layabout/blob/ed617cdfec4ec31b681f51697f922d4979f83cb6/tests/test_layabout.py
+[Alex LordThorsen]: https://github.com/rawrgulmuffins
+[Geoff Shannon]: https://github.com/RadicalZephyr
+[Kyle Rader]: https://github.com/kyle-rader
+[Mike Canoy]: https://github.com/solus-impar
+[pr-2]: https://github.com/reillysiemens/layabout/pull/2
 [Documentation]: https://layabout.readthedocs.io/en/latest/
 [Bug Reports / Issues]: https://github.com/reillysiemens/layabout/issues
 [Source Code]: https://github.com/reillysiemens/layabout/
