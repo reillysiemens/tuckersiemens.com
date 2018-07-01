@@ -256,7 +256,7 @@ percent_failures before.csv '5\.'
 percent_failures after.csv '5\.'
 ```
 
-Prior to fixing the issue 11.66% of all requests too longer than 5 seconds.
+Prior to fixing the issue 11.66% of all requests took longer than 5 seconds.
 After applying the fix that dropped to 0.13%. I'd say that's a noticeable
 improvement!
 
