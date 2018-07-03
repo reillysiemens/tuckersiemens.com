@@ -15,6 +15,12 @@ p {
 a {
   color: $link-color;
   text-decoration: none;
+  &.anchor {
+    color: #0074d94f;
+  }
+  &.anchor:hover {
+    color: $link-color;
+  }
   &:not(.anchor):hover {
     text-decoration: underline;
   }
