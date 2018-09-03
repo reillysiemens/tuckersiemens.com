@@ -1,7 +1,7 @@
 +++
 title = "hexo init blog"
 description = "Hello World!"
-date = "2015-04-24T01:57:13-08:00"
+date = 2015-04-24T01:57:13-08:00
 tags = ["hacks", "Hexo", "blogging"]
 +++
 I've been wanting to start a blog for a long time now. Today I'm pulling the

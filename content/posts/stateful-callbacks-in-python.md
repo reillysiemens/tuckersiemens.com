@@ -1,7 +1,7 @@
 +++
 title = "Stateful Callbacks in Python"
 description = "Stateful callbacks in Python."
-date = "2017-07-10T07:54:00-08:00"
+date = 2017-07-10T07:54:00-08:00
 tags = ["Python", "callbacks"]
 +++
 # What's a Callback?

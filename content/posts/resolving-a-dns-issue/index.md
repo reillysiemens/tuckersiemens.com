@@ -1,7 +1,7 @@
 +++
 title = "Resolving A DNS Issue"
 description = "Resolving my DNS issue."
-date = "2018-06-24T13:21:00-07:00"
+date = 2018-06-24T13:21:00-07:00
 tags = ["DNS", "HTTP", "Slow", "Internet"]
 +++
 Haha. Get it? _Resolving_ a DNS issue. OK, that was bad. You don't have to read
