@@ -13,10 +13,10 @@ The canonical web presence of Reilly Tucker Siemens.
    git clone git@github.com:reillysiemens/tuckersiemens.com.git
    cd tuckersiemens.com
    ```
-2. Install the latest [gutenberg] from source.
+2. Install the latest [Zola] from source.
    ```bash
-   git clone git@github.com:Keats/gutenberg.git /tmp/gutenberg
-   pushd /tmp/gutenberg
+   git clone git@github.com:getzola/zola.git /tmp/zola
+   pushd /tmp/zola
    git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
    cargo install  # This might take a minute. Grab some coffee.
    popd
@@ -28,4 +28,4 @@ The canonical web presence of Reilly Tucker Siemens.
 
 [Rust]: https://www.rust-lang.org
 [cargo]: https://crates.io/install
-[gutenberg]: https://github.com/Keats/gutenberg
+[Zola]: https://github.com/getzola/zola

@@ -8,7 +8,7 @@ clean:
 	rm -rf ./$(BUILD_DIR)/*
 
 build:
-	gutenberg build
+	zola build
 
 serve:
-	gutenberg serve
+	zola serve
