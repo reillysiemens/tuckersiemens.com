@@ -9,20 +9,15 @@ The canonical web presence of Reilly Tucker Siemens.
 
 ### Steps
 1. Clone this site and enter the directory.
-   ```bash
-   git clone git@github.com:reillysiemens/tuckersiemens.com.git
-   cd tuckersiemens.com
+   ```shell
+   repo='tuckersiemens.com'; git clone git@github.com:reillysiemens/${repo}.git && cd $repo
    ```
-2. Install the latest [Zola] from source.
-   ```bash
-   git clone git@github.com:getzola/zola.git /tmp/zola
-   pushd /tmp/zola
-   git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
-   cargo install  # This might take a minute. Grab some coffee.
-   popd
+2. Install or update to the latest [Zola] from source.
+   ```shell
+   make update-zola
    ```
 3. Build the site!
-   ```
+   ```shell
    make build
    ```
 
