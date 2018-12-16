@@ -12,3 +12,6 @@ build:
 
 serve:
 	zola serve
+
+update-zola:
+	@./bin/update-zola

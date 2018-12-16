@@ -1,0 +1,69 @@
+#!/usr/bin/env sh
+
+set -e
+
+: ${ZOLA_REPO='git@github.com:getzola/zola.git'}
+: ${ZOLA_BUILD_DIR='/tmp/zola'}
+
+# Helpers for ANSI color and logging.
+name="$(basename $0)"; esc=''; reset="${esc}[0m"
+red() { local string="${1}"; echo "${esc}[31m${string}${reset}"; }
+yellow() { local string="${1}"; echo "${esc}[33m${string}${reset}"; }
+green() { local string="${1}"; echo "${esc}[32m${string}${reset}"; }
+blue() { local string="${1}"; echo "${esc}[34m${string}${reset}"; }
+magenta() { local string="${1}"; echo "${esc}[35m${string}${reset}"; }
+log() { local string="${1}"; echo "[$(blue $name)] ${string}"; }
+
+prompt_for_update() {
+    local current="${1}"
+    local latest="${2}"
+
+    [ -n "${current}" ] \
+        && installed="You're using Zola $(yellow $current)" \
+        || installed="Zola is $(red 'not installed')"
+
+    log "${installed}, but $(magenta $latest) is available."
+
+    # Prompt for an update. Exit the entire script if declined.
+    read -p "$(log "Would you like to install Zola $(magenta $latest)? [y/N]: ")" answer
+    case $answer in
+        [Yy]*) log "Compiling from source. $(yellow 'This might take a minute.') Grab some ☕ or 🍵." ;;
+        [Nn]*|*) log $(red "Aborted!"); exit ;;
+    esac
+}
+
+install_zola() {
+    local version="${1}"
+
+    # Fetch the source to the build directory and navigate there.
+    git clone $ZOLA_REPO $ZOLA_BUILD_DIR && pushd $ZOLA_BUILD_DIR
+
+    # Check out the tagged release.
+    git checkout $version
+
+    # Install Zola over any existing installation.
+    cargo install -f
+
+    # Clean up.
+    popd; rm -rf $ZOLA_BUILD_DIR
+}
+
+update_zola() {
+    # Find the current Zola version (if any).
+    [ -n "$(which zola)" ] && current_version=$(zola --version | awk '{print "v"$2}')
+
+    # Find the latest available Zola version.
+    local latest_version=$(git ls-remote --tags $ZOLA_REPO | # Fetch remote tags.
+                           sort -t '/' -k 3 -V |             # Sort them by version.
+                           tail -n 1 |                       # Take the latest one.
+                           awk -F / '{print $3}')            # Return only the tag.
+
+    if [ "${current_version}" != "${latest_version}" ]; then
+        prompt_for_update "${current_version}" "${latest_version}"
+        install_zola "${latest_version}"
+    fi
+
+    log "You're using Zola $(magenta $latest_version). $(green "Everything is up-to-date!")"
+}
+
+update_zola
