@@ -1,3 +1,5 @@
+#!/usr/bin/make -f
+
 .PHONY: all build
 
 BUILD_DIR := public
