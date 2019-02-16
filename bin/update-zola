@@ -50,7 +50,7 @@ install_zola() {
 
 update_zola() {
     # Find the current Zola version (if any).
-    [ -n "$(which zola)" ] && current_version=$(zola --version | awk '{print "v"$2}')
+    [ -n "$(which zola 2> /dev/null)" ] && current_version=$(zola --version | awk '{print "v"$2}')
 
     # Find the latest available Zola version.
     local latest_version=$(git ls-remote --tags $ZOLA_REPO | # Fetch remote tags.
