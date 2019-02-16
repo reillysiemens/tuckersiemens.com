@@ -42,7 +42,7 @@ install_zola() {
     git checkout $version
 
     # Install Zola over any existing installation.
-    cargo install -f
+    cargo +stable install -f
 
     # Clean up.
     popd; rm -rf $ZOLA_BUILD_DIR
