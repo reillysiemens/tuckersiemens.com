@@ -7,7 +7,7 @@ BUILD_DIR := public
 all: clean build
 
 clean:
-	rm -rf ./$(BUILD_DIR)/*
+	rm -rfd ./$(BUILD_DIR)
 
 build:
 	zola build
