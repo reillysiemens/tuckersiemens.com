@@ -12,7 +12,7 @@ The canonical web presence of Reilly Tucker Siemens.
    ```shell
    repo='tuckersiemens.com'; git clone git@github.com:reillysiemens/${repo}.git && cd $repo
    ```
-2. Install or update to the latest [Zola] from source.
+2. Install or update to the latest [Zola].
    ```shell
    make update-zola
    ```

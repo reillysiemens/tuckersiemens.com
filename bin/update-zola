@@ -2,8 +2,8 @@
 
 set -e
 
-: ${ZOLA_REPO='git@github.com:getzola/zola.git'}
-: ${ZOLA_BUILD_DIR='/tmp/zola'}
+: ${ZOLA_REPO='https://github.com/getzola/zola'}
+: ${ZOLA_INSTALL_DIR="${HOME}/.cargo/bin"}
 
 # Helpers for ANSI color and logging.
 name="$(basename $0)"; esc=''; reset="${esc}[0m"
@@ -27,25 +27,16 @@ prompt_for_update() {
     # Prompt for an update. Exit the entire script if declined.
     read -p "$(log "Would you like to install Zola $(magenta $latest)? [y/N]: ")" answer
     case $answer in
-        [Yy]*) log "Compiling from source. $(yellow 'This might take a minute.') Grab some ☕ or 🍵." ;;
+        [Yy]*) log "Downloading Zola $(magenta $latest) from GitHub." ;;
         [Nn]*|*) log $(red "Aborted!"); exit ;;
     esac
 }
 
 install_zola() {
     local version="${1}"
+    local download_url="${ZOLA_REPO}/releases/download/${version}/zola-${version}-x86_64-unknown-linux-gnu.tar.gz"
 
-    # Fetch the source to the build directory and navigate there.
-    git clone $ZOLA_REPO $ZOLA_BUILD_DIR && pushd $ZOLA_BUILD_DIR
-
-    # Check out the tagged release.
-    git checkout $version
-
-    # Install Zola over any existing installation.
-    cargo +stable install -f --path .
-
-    # Clean up.
-    popd; rm -rf $ZOLA_BUILD_DIR
+    curl --progress-bar --location $download_url | tar --gunzip --extract --directory=$ZOLA_INSTALL_DIR --file -
 }
 
 update_zola() {
