@@ -95,12 +95,12 @@ better and I'm more motivated to continue working on it, so expect more posts!
 [early Hexo]: /posts/hexo-init-blog
 [feed link]: /rss.xml
 [staticgen]: https://www.staticgen.com/
-[Introducing Tera]: https://blog.wearewizards.io/introducing-tera-a-template-engine-in-rust
+[Introducing Tera]: https://www.vincentprouillet.com/blog/introducing-tera/
 [HN Tera post]: https://news.ycombinator.com/item?id=11507188
 [Tera]: https://github.com/Keats/tera
 [Jinja2]: http://jinja.pocoo.org/
-[Vincent]: https://vincent.is/
-[announcing Gutenberg]: https://vincent.is/announcing-gutenberg/
+[Vincent]: https://www.vincentprouillet.com/
+[announcing Gutenberg]: https://www.vincentprouillet.com/blog/announcing-gutenberg/
 [vigor]: https://github.com/reillysiemens/tuckersiemens.com/graphs/contributors?from=2017-04-23&to=2017-06-14&type=c
 [Sass]: http://sass-lang.com/
 [Gutenberg Contribution]: https://github.com/Keats/gutenberg/commit/7c1cecb2112e087e2ffb45937bea29ebf81df01e

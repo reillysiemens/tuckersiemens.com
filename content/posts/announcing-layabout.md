@@ -336,7 +336,7 @@ free to jump in and submit your own fix if you're able. Happy Slacking!
 [Alex LordThorsen]: https://github.com/rawrgulmuffins
 [Geoff Shannon]: https://github.com/RadicalZephyr
 [Kyle Rader]: https://github.com/kyle-rader
-[Mike Canoy]: https://github.com/solus-impar
+[Mike Canoy]: https://mikecanoy.net
 [pr-2]: https://github.com/reillysiemens/layabout/pull/2
 [Documentation]: https://layabout.readthedocs.io/en/latest/
 [Bug Reports / Issues]: https://github.com/reillysiemens/layabout/issues

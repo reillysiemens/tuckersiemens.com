@@ -150,7 +150,7 @@ their contributions in getting Layabout off the ground and helping maintain it.
 - Alex LordThorsen ([@rawrgulmuffins])
 - Geoff Shannon ([@RadicalZephyr])
 - Kyle Rader ([@kyle-rader])
-- Mike Canoy ([@solus-impar])
+- Mike Canoy ([@mikecanoy])
 - Sophie Anderson ([@SophieKAn])
 
 [Layabout]: https://layabout.readthedocs.io/en/latest
@@ -168,5 +168,5 @@ their contributions in getting Layabout off the ground and helping maintain it.
 [@rawrgulmuffins]: https://github.com/rawrgulmuffins
 [@RadicalZephyr]: https://github.com/RadicalZephyr
 [@kyle-rader]: https://github.com/kyle-rader
-[@solus-impar]: https://github.com/solus-impar
+[@mikecanoy]: https://github.com/mikecanoy
 [@SophieKAn]: https://github.com/SophieKAn
