@@ -107,5 +107,5 @@ better and I'm more motivated to continue working on it, so expect more posts!
 [404]: /404.html
 [50x]: /50x.html
 [GitHub repo]: https://github.com/reillysiemens/tuckersiemens.com
-[Alex Sun]: http://syaning.com/
+[Alex Sun]: https://syaning.github.io/
 [vida]: https://github.com/syaning/vida
