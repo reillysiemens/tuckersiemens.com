@@ -55,6 +55,9 @@ figcaption {
 }
 
 table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
   border-collapse: separate;
   border-spacing: 0;
   max-width: 100%;
