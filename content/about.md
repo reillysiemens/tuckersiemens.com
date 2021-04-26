@@ -27,4 +27,4 @@ and on Twitter as [@TuckerSiemens](https://twitter.com/TuckerSiemens).
 
 [EA26 C944 1A6C 40E4 0E73  B4EC 1B45 8E7C 7CB1 54A9][PGP Key]
 
-[PGP Key]: https://sks-keyservers.net/pks/lookup?op=get&search=0x1B458E7C7CB154A9
+[PGP Key]: https://github.com/reillysiemens.gpg
