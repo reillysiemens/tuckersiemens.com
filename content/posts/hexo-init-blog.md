@@ -52,7 +52,7 @@ and submit a pull request upstream for a configuration option to preserve
 certain files, but I'm much too lazy for that. Instead I've enlisted
 [nginx](http://nginx.org/) for a band-aid solution.
 
-```nginx
+```
 location =/keybase.txt {
     root /srv;
 }
