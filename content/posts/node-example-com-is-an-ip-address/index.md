@@ -599,7 +599,7 @@ and the value of Unicode. See you next year! 😂
 [python3-str-type]: https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str
 [future]: https://python-future.org/
 [six]: https://six.readthedocs.io/
-[Alexis King]: https://lexi-lambda.github.io/resume.html
+[Alexis King]: https://lexi-lambda.github.io/about.html
 [parse-dont-validate]: https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/
 [internationalized domain names]: https://en.wikipedia.org/wiki/Internationalized_domain_name
 [yandex]: https://Яндекс.рф

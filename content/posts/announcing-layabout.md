@@ -318,9 +318,9 @@ free to jump in and submit your own fix if you're able. Happy Slacking!
 [slackclient]: https://github.com/slackapi/python-slackclient
 [Slack Web API]: https://api.slack.com/web
 [pytest]: https://docs.pytest.org/en/latest/
-[pytest-parametrize]: https://docs.pytest.org/en/latest/parametrize.html
+[pytest-parametrize]: https://docs.pytest.org/en/latest/how-to/parametrize.html
 [Armin Ronacher]: http://lucumr.pocoo.org/about/
-[2020]: https://www.python.org/dev/peps/pep-0373/#id2
+[2020]: https://www.python.org/dev/peps/pep-0373/#update-april-2014
 [async-def]: https://docs.python.org/3/reference/compound_stmts.html#async-def
 [type annotations]: https://www.python.org/dev/peps/pep-0484/
 [type alias]: https://docs.python.org/3/library/typing.html#type-aliases

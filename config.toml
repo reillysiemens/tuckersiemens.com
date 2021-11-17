@@ -11,5 +11,14 @@ compile_sass = true
 highlight_code = true
 highlight_theme = "gruvbox-dark"
 
+[link_checker]
+skip_prefixes = [
+    "https://192.168.1.1",
+    "https://router.asus.com",
+]
+skip_anchor_prefixes = [
+    "https://github.com/",
+]
+
 [extra]
 author = "Reilly Tucker Siemens"

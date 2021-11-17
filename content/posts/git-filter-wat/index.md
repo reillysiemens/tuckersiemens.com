@@ -74,7 +74,7 @@ To be honest, I half expected something like this to happen. With the previous
 command I was never asked to resign these commits. The text of my commit
 message has been clobbered with the PGP signature. How do I fix that?
 
-Some advocate [not signing individual commits] and instead just
+Some advocate not signing individual commits and instead just
 [using a signed tag], but I don't subscribe to that idea. I really want each
 individual commit to be signed.
 
@@ -299,9 +299,8 @@ Verified commits on GitHub. Success! <a href='verified-commits.png'>View full si
 
 [dotfiles]: https://github.com/reillysiemens/dotfiles
 [GPG signature verification]: https://github.com/blog/2144-gpg-signature-verification
-[public key]: https://pgp.mit.edu/pks/lookup?op=get&search=0x1B458E7C7CB154A9
+[public key]: https://github.com/reillysiemens.gpg
 [change the authorship]: https://stackoverflow.com/questions/750172/change-the-author-of-a-commit-in-git
-[not signing individual commits]: http://git.661346.n2.nabble.com/GPG-signing-for-git-commit-td2582986.html
 [using a signed tag]: https://stackoverflow.com/questions/13504983/retroactively-sign-git-commits
 [Additional Stack Overflowing]: http://stackoverflow.com/a/31640257/3288364
 [Git Immersion]: http://gitimmersion.com/lab_11.html
