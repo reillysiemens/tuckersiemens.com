@@ -1,9 +1,22 @@
 {% extends "index.html" %}
 
+{# Override base title to use the page-specific title. #}
+{% block title %}{{ page.title }}{% endblock title %}
+
+{# Override base meta tags to use page-specific ones. #}
+{% block meta %}
+  <meta name="description" content="{{ page.description }}">
+  <meta property="og:url" content="{{ page.permalink }}">
+  <meta property="og:title" content="{{ page.title }}">
+  <meta property="og:description" content="{{ page.description }}">
+{% endblock meta %}
+
+{# Override base links to use page-specific ones. #}
+{% block links %}
+  <link rel="canonical" href="{{ page.permalink }}">
+{% endblock links %}
+
+{# Override base content to use page-specific content. #}
 {% block content %}
-  <article class='post'>  
-    <h1 class='post-header'>{{ page.title }}</h1>
-    <p class='post-meta'>{{ page.date | date(format="%Y-%m-%d") }}</p>
-    {{ page.content | safe }}
-  </article>
+  {{ page.content | safe }}
 {% endblock content %}

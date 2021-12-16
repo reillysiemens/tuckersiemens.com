@@ -3,6 +3,7 @@ title = "node.example.com Is An IP Address"
 description = "node.example.com is an IP address."
 url = "posts/node-example-com-is-an-ip-address"
 date = 2020-12-28T06:13:05-08:00
+[taxonomies]
 tags = ["Python", "Testing", "Networking"]
 +++
 # URLs Are Hard

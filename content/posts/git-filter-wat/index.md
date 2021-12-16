@@ -3,6 +3,7 @@ title = "git filter-wat"
 description = "Fighting git filter-branch and GPG."
 url = "posts/git-filter-wat"
 date = 2016-04-07T16:06:33-08:00
+[taxonomies]
 tags = ["GitHub", "PGP", "Git"]
 +++
 Welcome to this year's annual blog post!

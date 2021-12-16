@@ -1,51 +1,26 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
   <head>
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    {% if page %}
-      <meta name='description' content='{{ page.description }}'>
-    {% else %}
-      <meta name='description' content='{{ config.description }}'>
-    {% endif %}
-    <meta name='author' content='{{ config.extra.author }}'>
-    <title>{{ config.title }}</title>
-    <link rel='dns-prefetch' href='https://fonts.googleapis.com/'>
-    <link rel='stylesheet' href='/main.css'>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ section.title }}{% endblock title %}</title>
+    <meta name="author" content="{{ config.extra.author }}">
+    {% block meta %}
+      <meta name="description" content="{{ section.description }}">
+      <meta property="og:url" content="{{ section.permalink }}">
+      <meta property="og:title" content="{{ section.title }}">
+      <meta property="og:description" content="{{ section.description }}">
+      <meta property="og:type" content="profile">
+    {% endblock meta %}
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+    <link rel="stylesheet" href="/main.css">
+    {% block links %}
+      <link rel="canonical" href="{{ section.permalink }}">
+    {% endblock links %}
   </head>
   <body>
-    <div class='site-container'>
-      <header class='site-header'>
-        <h1 class='site-title'><a href='{{ config.base_url }}'>{{ config.title }}</a></h1>
-        <nav class='site-nav'>
-          <a href='{{ config.base_url }}/' class='{% if not page.path %}active{% endif %}'>Posts</a>
-          <a href='{{ config.base_url }}/projects' class='{% if page %}{% if page.path == "&#x2F;projects" %}active{% endif %}{% endif %}'>Projects</a>
-          <!-- <a href='{{ config.base_url }}/resume' class='{% if page %}{% if page.path == "&#x2F;resume" %}active{% endif %}{% endif %}'>Résumé</a> -->
-          <a href='{{ config.base_url }}/about' class='{% if page %}{% if page.path == "&#x2F;about" %}active{% endif %}{% endif %}'>About</a>
-        </nav>
-      </header>
-      <main class='site-content'>
-      {% block content %}
-        <ul class='posts'>
-          {% set posts = get_section(path="posts/_index.md") %}
-          {% for page in posts.pages %}
-            {% if page.date %}
-              <li><span class='post-meta'>{{ page.date | date(format="%Y-%m-%d") }}</span><a href='{{ page.permalink }}'>{{ page.title }}</a></li>
-            {% endif %}
-          {% endfor %}
-        </ul>
-      {% endblock content %}
-      </main>
-      <footer class='site-footer'>
-        <div class='copyright'>© {{ now() | date(format="%Y") }} Reilly Tucker Siemens</div>
-        <div class='powered-by'>
-          Powered by
-          <a href='https://www.getzola.org/'>Zola</a>
-          with inspiration from
-          <a href='https://github.com/syaning/vida'>vida</a>.
-          <a href='/rss.xml'>RSS Feed</a>.
-        </div>
-      </footer>
-    </div>
+    {% block content %}
+      {{ section.content | safe }}
+    {% endblock content %}
   </body>
 </html>

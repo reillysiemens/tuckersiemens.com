@@ -2,6 +2,7 @@
 title = "Announcing Layabout"
 description = "Announcing Layabout, an event handler for the Slack RTM API."
 date = 2018-06-30T00:16:52-07:00
+[taxonomies]
 tags = ["Slack", "Python", "Layabout"]
 +++
 # Event Handling for the Slack RTM API

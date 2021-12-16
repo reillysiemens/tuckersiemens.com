@@ -1,0 +1,25 @@
+{% extends "page.html" %}
+
+{# Override page-specific meta tags to add post-specific ones. In particular,
+posts add article metadata. #}
+{% block meta %}
+  <meta name="description" content="{{ page.description }}">
+  <meta property="og:url" content="{{ page.permalink }}">
+  <meta property="og:title" content="{{ page.title }}">
+  <meta property="og:description" content="{{ page.description }}">
+  <meta property="og:type" content="article">
+  <meta property="og:article:author" content="{{ config.extra.author }}">
+  <meta property="og:article:published_time" content="{{ page.date }}">
+  <meta property="og:article:section" content="Posts">
+  {% for tag in page.taxonomies.tags %}
+    <meta property="og:article:tag" content="{{ tag }}">
+  {% endfor %}
+{% endblock meta %}
+
+{% block content %}
+  <article class="post">  
+    <h1 class="post-header">{{ page.title }}</h1>
+    <p class="post-meta">{{ page.date | date(format="%Y-%m-%d") }}</p>
+    {{ page.content | safe }}
+  </article>
+{% endblock content %}

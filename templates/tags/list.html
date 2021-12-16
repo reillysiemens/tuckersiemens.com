@@ -1,0 +1,26 @@
+{% extends "index.html" %}
+
+{% block title %}Tags{% endblock title %}
+
+{% block meta %}
+  <meta name="description" content="All post tags.">
+  <meta property="og:url" content="{{ current_url }}">
+  <meta property="og:title" content="Tags">
+  <meta property="og:description" content="All post tags.">
+{% endblock meta %}
+
+{% block links %}
+  <link rel="canonical" href="{{ current_url }}">
+{% endblock links %}
+
+{% block content %}
+  <h1>All Post Tags</h1>
+  {% if terms %}
+    <ul>
+    {% for term in terms %}
+      <li><a href="{{ term.permalink }}">{{ term.name }}</a></li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock content %}
+

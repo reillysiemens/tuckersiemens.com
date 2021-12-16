@@ -2,6 +2,7 @@
 title = "Deprecating Layabout"
 description = "Deprecating Layabout"
 date = 2019-12-31T17:29:00-08:00
+[taxonomies]
 tags = ["Slack", "Python", "Layabout"]
 +++
 # Deprecating Layabout

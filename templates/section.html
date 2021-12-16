@@ -1,0 +1,22 @@
+{% extends "index.html" %}
+
+{# Override base title to use the section-specific title. #}
+{% block title %}{{ section.title }}{% endblock title %}
+
+{# Override base meta tags to use page-specific ones. #}
+{% block meta %}
+  <meta name="description" content="{{ section.description }}">
+  <meta property="og:url" content="{{ section.permalink }}">
+  <meta property="og:title" content="{{ section.title }}">
+  <meta property="og:description" content="{{ section.description }}">
+{% endblock meta %}
+
+{# Override base links to use section-specific ones. #}
+{% block links %}
+  <link rel="canonical" href="{{ section.permalink }}">
+{% endblock links %}
+
+{# Override base content to use section-specific content. #}
+{% block content %}
+  {{ section.content | safe }}
+{% endblock content %}
