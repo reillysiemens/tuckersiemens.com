@@ -5,8 +5,6 @@ date = 2017-06-18T15:17:00-08:00
 [taxonomies]
 tags = ["gutenberg", "Rust", "blogging"]
 +++
-# Abandoning Hexo 
-
 When I first created this site I wanted to get it live as quickly as possible.
 [Hexo][hexo], a blogging framework written in Node.js, seemed like the perfect
 tool. At the time I was rather interested in Node.js, so it seemed natural to
@@ -17,6 +15,8 @@ and much more interested in Rust and its community. It was mostly
 procrastination, but I convinced myself that using a tool written in a language
 I didn't use often directly contributed to the paucity of posts here, so I
 finally decided to ditch Hexo.  
+
+<!-- more -->
 
 # Replacement Criteria
 

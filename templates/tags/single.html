@@ -1,4 +1,5 @@
 {% extends "index.html" %}
+{% import "post_macros.html" as post_macros %}
 
 {% block title %}Tag - {{ term.name }}{% endblock title %}
 
@@ -14,10 +15,10 @@
 {% endblock links %}
 
 {% block content %}
-  <h1>Posts Tagged as "{{ term.name }}"</h1>
-  <ul>
+  <header>
+    <h1>Posts Tagged as "{{ term.name }}"</h1>
+  </header>
   {% for page in term.pages %}
-    <li><a href="{{ page.permalink }}">{{ page.title }}</a></li>
+    {{ post_macros::snippet(page=page) }}
   {% endfor %}
-  </ul>
 {% endblock content %}

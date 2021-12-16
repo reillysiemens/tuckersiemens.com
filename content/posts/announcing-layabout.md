@@ -5,12 +5,13 @@ date = 2018-06-30T00:16:52-07:00
 [taxonomies]
 tags = ["Slack", "Python", "Layabout"]
 +++
-# Event Handling for the Slack RTM API
 
 Today I'm announcing [Layabout], my first official Python library. Layabout is
 a small event handling library on top of the
 [Slack Real Time Messaging (RTM) API][Slack RTM API]. You can get it right now
 on [PyPI].
+
+<!-- more -->
 
 # What's It Good For?
 

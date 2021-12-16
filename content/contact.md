@@ -3,8 +3,6 @@ title = "Contact"
 description = "Let's get in touch."
 insert_anchor_links = "none"
 +++
-<h1>Contact</h1>
-
 You can find me on GitHub as [@reillysiemens] and on Twitter as
 [@TuckerSiemens]. If you want to email me, you can use my first name at this
 domain dot com. You can use [my key] if you're willing to suffer the `gpg`

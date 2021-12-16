@@ -20,6 +20,9 @@
   </head>
   <body>
     {% block content %}
+      <header>
+        <h1>{{ section.title }}</h1>
+      </header>
       {{ section.content | safe }}
     {% endblock content %}
   </body>

@@ -10,6 +10,8 @@ anymore, but I'm `SOA` into this. You might even say I'm in the zone. I think
 it's gonna be `A` great read, so consider sticking around, 'cuz there's no
 TLD;R.
 
+<!-- more -->
+
 # Symptoms
 
 A few months ago I switched ISPs to try to support a smaller regional ISP

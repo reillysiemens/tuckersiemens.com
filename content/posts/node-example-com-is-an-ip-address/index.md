@@ -6,11 +6,11 @@ date = 2020-12-28T06:13:05-08:00
 [taxonomies]
 tags = ["Python", "Testing", "Networking"]
 +++
-# URLs Are Hard
-
 Hello! Welcome to the once-yearly blog post! This year I'd like to examine the
 most peculiar bug I encountered at work. To set the stage, let's start with a
 little background. 📚
+
+<!-- more -->
 
 When we write [URLs][URL] with a [non-standard][standard ports] [port] we
 specify the port after a `:`. With [hostnames][hostname] and [IPv4] addresses

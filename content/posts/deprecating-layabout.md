@@ -5,14 +5,14 @@ date = 2019-12-31T17:29:00-08:00
 [taxonomies]
 tags = ["Slack", "Python", "Layabout"]
 +++
-# Deprecating Layabout
-
 Since [Layabout] launched last year it has been downloaded 5,755 times, gotten
 16 stars on GitHub, been used by a Portuguese startup to teach a
 [Haskell workshop], and received a [Twitter shout-out] from [@roach], one of
 the core contributors to the [official Python Slack client]. During that time the
 official client library also got a **lot** better! So much better, in fact,
 that I've decided to deprecate Layabout.
+
+<!-- more -->
 
 # When?
 

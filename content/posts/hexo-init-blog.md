@@ -9,6 +9,8 @@ I've been wanting to start a blog for a long time now. Today I'm pulling the
 trigger on that with a simple `hexo init blog`. Well, it wasn't _that_ simple,
 so I feel like it's worth talking about a few of the complications I had.
 
+<!-- more -->
+
 
 [Hexo](https://hexo.io/), my chosen blogging framework, has made some
 interesting decisions. Running `tree -aACL 1` shows the directory structure for

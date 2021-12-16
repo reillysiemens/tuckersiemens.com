@@ -1,7 +1,13 @@
 {% extends "section.html" %}
+{% import "post_macros.html" as post_macros %}
 
 {% block content %}
+  <main class="content">
+  <header>
+    <h1>Posts</h1>
+  </header>
   {% for page in section.pages %}
-    <p>{{ page.date | date(format="%F") }}</p><a href="{{ page.permalink }}"><h1>{{ page.title }}</h1></a>
+    {{ post_macros::snippet(page=page) }}
   {% endfor %}
+  </main>
 {% endblock content %}

@@ -5,14 +5,14 @@ date = 2017-07-10T07:54:00-08:00
 [taxonomies]
 tags = ["Python", "callbacks"]
 +++
-# What's a Callback?
-
 If you're unfamiliar with what a callback is, don't worry, we can sort that out
 quickly. If callbacks are old hat for you you might want to skip to
 [the interesting bit](#stateful-callbacks).
 
 Simply put, a callback is a function that is passed as an argument to
 another function which may execute it.
+
+<!-- more -->
 
 Take, for example, these functions:
 

@@ -8,13 +8,13 @@ tags = ["GitHub", "PGP", "Git"]
 +++
 Welcome to this year's annual blog post!
 
-# The Problem
-
 I've been signing `git` commits for my [dotfiles] repository since its
 inception in October of last year, so I was excited to see that GitHub recently
 added [GPG signature verification]. All you have to do is upload your
 [public key] to GitHub and you'll be verifying commits like a champ. Or so I
 thought…
+
+<!-- more -->
 
 <figure>
 <img src='signature-doesnt-match-committer.png' alt="Signature Doesn't Match Committer">

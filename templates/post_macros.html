@@ -1,0 +1,23 @@
+{% macro meta(page) %}
+  <time datetime="{{ page.date }}">{{ page.date | date(format="%F") }}</time>
+  {% if page.taxonomies.tags %}
+    ⬢ 
+    {% for tag in page.taxonomies.tags %}
+      <a href="{{ get_taxonomy_url(kind="tags", name=tag) }}">{{ tag }}</a>
+      {%- if page.taxonomies.tags | length > 1 and loop.index != page.taxonomies.tags | length -%}
+        ,
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endmacro meta %}
+
+{% macro snippet(page) %}
+  <article>
+      <h2><a href="{{ page.permalink }}">{{ page.title }}</a></h1>
+      {{ self::meta(page=page) }}
+      {% if page.summary %}
+        {{ page.summary | safe }}
+      {% endif %}
+      <nav><a href="{{ page.permalink }}">Read More →</a></nav>
+  </article>
+{% endmacro snippet %}

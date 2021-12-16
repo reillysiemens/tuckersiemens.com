@@ -1,4 +1,5 @@
 {% extends "page.html" %}
+{% import "post_macros.html" as page_macros %}
 
 {# Override page-specific meta tags to add post-specific ones. In particular,
 posts add article metadata. #}
@@ -17,9 +18,11 @@ posts add article metadata. #}
 {% endblock meta %}
 
 {% block content %}
-  <article class="post">  
-    <h1 class="post-header">{{ page.title }}</h1>
-    <p class="post-meta">{{ page.date | date(format="%Y-%m-%d") }}</p>
+  <article>
+    <header>
+      <h1>{{ page.title }}</h1>
+      {{ page_macros::meta(page=page) }}
+    </header>
     {{ page.content | safe }}
   </article>
 {% endblock content %}
