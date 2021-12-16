@@ -5,7 +5,7 @@ insert_anchor_links = "none"
 +++
 Hey, there! I'm Tucker. My pronouns are [he/him].
 
-I'm a software engineer from Seattle. I love photography, yoga &amp;
+I'm a software engineer from Seattle. I love hiking, yoga &amp;
 meditation, making cocktails, drinking great brews (coffee _and_ beer), and
 listening to a wide variety of music. There's a special place in my heart for
 jazz, which my dad taught me to love.
