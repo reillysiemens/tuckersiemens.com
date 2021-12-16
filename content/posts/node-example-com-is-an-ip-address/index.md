@@ -571,7 +571,7 @@ and the value of Unicode. See you next year! 😂
 [IPv6]: https://en.wikipedia.org/wiki/IPv6#Addressing
 [hexadecimal]: https://en.wikipedia.org/wiki/Hexadecimal
 [RFC 2732]: https://www.ietf.org/rfc/rfc2732.txt
-[drop-python2]: #drop-python2
+[drop-python2]: /#drop-python2
 [Bizarro World]: https://en.wikipedia.org/wiki/Bizarro_World
 [ip_address]: https://github.com/python/cpython/blob/v3.9.0/Lib/ipaddress.py#L27-L54
 [ASCII]: https://en.wikipedia.org/wiki/ASCII
