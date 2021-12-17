@@ -1,18 +1,102 @@
 @charset "utf-8";
 
-// $base-font-family: 'Noto Serif', serif;
-// $title-font-family: 'Noto Sans', sans-serif;
-// $code-font-family: 'Roboto Mono', monospace;
-// $base-font-size:   16px;
-// $small-font-size:  0.875rem;
-// $base-line-height: 1.5;
+// TODO: Should anything special be done for the <abbr> tag?
 
-// $text-color:   #333;
-// $link-color:   #0074d9;
-// $anchor-color: #0074d9af;
-// $meta-color:   #a0a0a0;
-// $border-color: #ddd;
+// TODO: Load these from the local server instead of Google?
+@import url('https://fonts.googleapis.com/css?family=Noto+Sans|Noto+Serif|Noto+Sans+Mono');
 
-// @import url('https://fonts.googleapis.com/css?family=Noto+Sans|Noto+Serif|Roboto+Mono');
-// @import "base";
-// @import "layout";
+:root {
+  // Fonts
+  --default-serif-font: "Noto Serif", serif;
+  --default-sans-font: "Noto Sans", sans-serif;
+  --default-mono-font: "Noto Sans Mono", monospace;
+  --default-font-size: 18px;
+  --header-font-size: 2.8em;
+  --default-line-height: 1.4em;
+
+  // Gruvbox Dark Colors
+  --background-color: #1d2021;
+  --foreground-color: #ebdbb2;
+  --link-color: #458588;
+  --accent-color: #b16286;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    // Gruvbox Light Colors
+    --background-color: #f9f5d7;
+    --foreground-color: #3c3836;
+    --accent-color: #8f3f71;
+  }
+
+  // TODO: Can this be accomplished using a :root variable?
+  code {
+    color: #ebdbb2;
+  }
+
+  // TODO: Is this really the best way to accomplish this?
+  a > code {
+    color: var(--link-color);
+  }
+}
+
+.accent {
+  color: var(--accent-color);
+}
+
+body {
+  margin: 0;
+  line-height: var(--default-line-height);
+  font-size: var(--default-font-size);
+  font-family: var(--default-serif-font);
+  background-color: var(--background-color);
+  color: var(--foreground-color);
+  border-top: 0.5em solid var(--accent-color);
+}
+
+main.content {
+  max-width: 48em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// TODO: It might be worth adding an [extra] section for a "display title" to
+// allow <br> elements for more manual control over title display.
+header > h1 {
+  text-align: center;
+  font-size: var(--header-font-size);
+  line-height: 3.6rem; // TODO: Is this actually a good idea?
+  font-family: var(--default-sans-font);
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+pre {
+  display: block;
+  padding: 0.25rem 1.25rem;
+  font-size: 85%;
+  border-left: 0.25rem solid var(--accent-color);
+}
+
+code {
+  padding: 0.05rem 0.125rem;
+  background-color: #3c3836;
+  // background-color: #282828;
+  border-radius: 3px;
+}
+
+pre, code {
+  overflow: auto;
+  font-family: var(--default-mono-font);
+}
+
+// Without this the <code> tag gains a little padding that offsets text by like
+// 2 pixels. Let's *not* do that.
+pre > code {
+  padding: 0;
+  background-color: #282828;
+  border-radius: unset;
+}
