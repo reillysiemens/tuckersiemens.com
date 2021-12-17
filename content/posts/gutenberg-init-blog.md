@@ -14,7 +14,7 @@ By the time of my last post I'd become increasingly disinterested in Node.js
 and much more interested in Rust and its community. It was mostly
 procrastination, but I convinced myself that using a tool written in a language
 I didn't use often directly contributed to the paucity of posts here, so I
-finally decided to ditch Hexo.  
+finally decided to ditch Hexo.
 
 <!-- more -->
 
