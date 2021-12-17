@@ -17,16 +17,16 @@ template. Best we can do is replace the canonical link with a blank. #}
 
 {# Override base content to use 404-specific content. #}
 {% block content %}
-  <header>
-    <h1>404 Not Found</h1>
-  </header>
-  <figure>
-    <video src="/beer.mp4" type="video/mp4" autoplay loop controls></video>
-    <figcaption>
-    Cinemagraph by <a href="https://www.reddit.com/user/digdilem">u/digdilem</a>
-    </figcaption>
-  </figure>
-  <main>
+  <main class="content">
+    <header>
+      <h1>404 Not Found</h1>
+    </header>
+    <figure>
+      <video src="/beer.mp4" type="video/mp4" autoplay loop controls></video>
+      <figcaption>
+      Cinemagraph by <a href="https://www.reddit.com/user/digdilem">u/digdilem</a>
+      </figcaption>
+    </figure>
     <p>Nothing to see here. Why not grab a beer and head <a href="/">home</a>?</p>
   </main>
 {% endblock content %}

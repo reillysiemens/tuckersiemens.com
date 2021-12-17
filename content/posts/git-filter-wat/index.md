@@ -20,7 +20,7 @@ thought…
 <img src='signature-doesnt-match-committer.png' alt="Signature Doesn't Match Committer">
 <figcaption>
 Unverified commits on GitHub. <a href='signature-doesnt-match-committer.png'>View full size.</a>
-</figcaption
+</figcaption>
 </figure>
 
 GitHub thinks I'm unverified. I think that's some baloney. I _know_ the public
@@ -63,7 +63,7 @@ git filter-branch -f --env-filter "GIT_AUTHOR_EMAIL='reilly@tuckersiemens.com'" 
 <img src='git-filter-wat.png' alt='git-filter-wat'>
 <figcaption>
 A royally screwed up commit log. <a href='git-filter-wat.png'>View full size.</a>
-</figcaption
+</figcaption>
 </figure>
 
 
@@ -130,7 +130,7 @@ feel comfortable taking the sledgehammer approach.
 <img src='signature-doesnt-match-committer.png' alt="Signature Doesn't Match Committer">
 <figcaption>
 These commits are <em>still</em> unverified on GitHub. <a href='signature-doesnt-match-committer.png'>View full size.</a>
-</figcaption
+</figcaption>
 </figure>
 
 Well, that didn't change anything. What gives? What am I missing? How does
@@ -150,7 +150,7 @@ git push --force origin master
 <img src='oh-but-it-does.png' alt='Oh, but it does!'>
 <figcaption>
 Oh, but it <em>does</em> work! <a href='oh-but-it-does.png'>View full size.</a>
-</figcaption
+</figcaption>
 </figure>
 
 Now I think I'm crazy. This works, but _why_? Something **must** be different,
@@ -278,7 +278,7 @@ commits!
 <img src='messed-up-git-graph.png' alt='Messed Up Git Graph'>
 <figcaption>
 Not <em>quite</em> there yet. <a href='messed-up-git-graph.png'>View full size.</a>
-</figcaption
+</figcaption>
 </figure>
 
 # Success
@@ -295,7 +295,7 @@ everything will be right again.
 <img src='verified-commits.png' alt='Verified Commits'>
 <figcaption>
 Verified commits on GitHub. Success! <a href='verified-commits.png'>View full size.</a>
-</figcaption
+</figcaption>
 </figure>
 
 [dotfiles]: https://github.com/reillysiemens/dotfiles
