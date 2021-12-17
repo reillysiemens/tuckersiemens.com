@@ -3,11 +3,11 @@
 
 {% block content %}
   <main class="content">
-  <header>
-    <h1>Posts</h1>
-  </header>
-  {% for page in section.pages %}
-    {{ post_macros::snippet(page=page) }}
-  {% endfor %}
+    <header>
+      <h1>Posts</h1>
+    </header>
+    {% for page in section.pages %}
+      {{ post_macros::snippet(page=page) }}
+    {% endfor %}
   </main>
 {% endblock content %}

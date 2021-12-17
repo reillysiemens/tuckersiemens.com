@@ -18,11 +18,13 @@ posts add article metadata. #}
 {% endblock meta %}
 
 {% block content %}
-  <article>
-    <header>
-      <h1>{{ page.title }}</h1>
-      {{ page_macros::meta(page=page) }}
-    </header>
-    {{ page.content | safe }}
-  </article>
+  <main class="content">
+    <article>
+      <header>
+        <h1>{{ page.title }}</h1>
+        {{ page_macros::meta(page=page) }}
+      </header>
+      {{ page.content | safe }}
+    </article>
+  </main>
 {% endblock content %}

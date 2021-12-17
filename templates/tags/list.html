@@ -14,15 +14,17 @@
 {% endblock links %}
 
 {% block content %}
-  <header>
-    <h1>All Tags</h1>
-  </header>
-  {% if terms %}
-    <ul>
-    {% for term in terms %}
-        <li><a href="{{ term.permalink }}">{{ term.name }}</a> ({{ term.pages | length }})</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
+  <main class="content">
+    <header>
+      <h1>All Tags</h1>
+    </header>
+    {% if terms %}
+      <ul>
+      {% for term in terms %}
+          <li><a href="{{ term.permalink }}">#{{ term.name }}</a> ({{ term.pages | length }})</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  </main>
 {% endblock content %}
 

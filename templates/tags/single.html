@@ -15,10 +15,12 @@
 {% endblock links %}
 
 {% block content %}
-  <header>
-    <h1>Posts Tagged as "{{ term.name }}"</h1>
-  </header>
-  {% for page in term.pages %}
-    {{ post_macros::snippet(page=page) }}
-  {% endfor %}
+  <main class="content">
+    <header>
+      <h1>Posts Tagged as "{{ term.name }}"</h1>
+    </header>
+    {% for page in term.pages %}
+      {{ post_macros::snippet(page=page) }}
+    {% endfor %}
+  </main>
 {% endblock content %}

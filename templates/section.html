@@ -18,8 +18,10 @@
 
 {# Override base content to use section-specific content. #}
 {% block content %}
-  <header>
-    <h1>{{ section.title }}</h1>
-  </header>
-  {{ section.content | safe }}
+  <main class="content">
+    <header>
+      <h1>{{ section.title }}</h1>
+    </header>
+    {{ section.content | safe }}
+  </main>
 {% endblock content %}
