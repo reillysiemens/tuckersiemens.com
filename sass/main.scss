@@ -17,8 +17,12 @@
   // Gruvbox Dark Colors
   --background-color: #1d2021;
   --foreground-color: #ebdbb2;
+  --primary-accent-color: #b16286;
+
+  // Common Colors
   --link-color: #458588;
-  --accent-color: #b16286;
+  --muted-color: #928374;
+  --secondary-accent-color: #689d6a;
 }
 
 @media (prefers-color-scheme: light) {
@@ -26,7 +30,7 @@
     // Gruvbox Light Colors
     --background-color: #f9f5d7;
     --foreground-color: #3c3836;
-    --accent-color: #8f3f71;
+    --primary-accent-color: #8f3f71;
   }
 
   // TODO: Can this be accomplished using a :root variable?
@@ -41,7 +45,7 @@
 }
 
 .accent {
-  color: var(--accent-color);
+  color: var(--primary-accent-color);
 }
 
 body {
@@ -51,7 +55,7 @@ body {
   font-family: var(--default-serif-font);
   background-color: var(--background-color);
   color: var(--foreground-color);
-  border-top: 0.5em solid var(--accent-color);
+  border-top: 0.5em solid var(--primary-accent-color);
 }
 
 main.content {
@@ -69,21 +73,54 @@ header > h1 {
   font-family: var(--default-sans-font);
 }
 
+p {
+  margin-bottom: 1em;
+}
+
 a {
   color: var(--link-color);
   text-decoration: none;
+}
+
+blockquote {
+  // Default text uses serif, so use sans-serif to differentiate quoted text.
+  font-family: var(--default-sans-font);
+  font-style: italic;
+  // Indent blockquotes, but align the start with where text in code begins.
+  margin: 0 1.25rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  border-left: 3px solid var(--secondary-accent-color);
+}
+
+img, video {
+  // Images/videos should fill the width of their containers if possible.
+  width: 100%;
+  height: auto;
+}
+
+figure {
+  // Don't add margins to figures.
+  margin: 0;
+}
+
+figcaption {
+  // De-emphasize figure captions.
+  font-size: 0.85rem;
+  color: var(--muted-color);
 }
 
 pre {
   display: block;
   padding: 0.25rem 1.25rem;
   font-size: 85%;
-  border-left: 0.25rem solid var(--accent-color);
+  border-left: 0.25rem solid var(--primary-accent-color);
 }
 
 code {
   padding: 0.05rem 0.125rem;
   background-color: #3c3836;
+  // Inline code blocks look less aggresive with a little rounding.
   border-radius: 3px;
 }
 
@@ -97,5 +134,6 @@ pre, code {
 pre > code {
   padding: 0;
   background-color: #282828;
+  // Code inside a pre block doesn't need rounded borders.
   border-radius: unset;
 }
