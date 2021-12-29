@@ -137,3 +137,22 @@ pre > code {
   // Code inside a pre block doesn't need rounded borders.
   border-radius: unset;
 }
+
+// TODO: This probably doesn't need a separate class if h2 is used instead of
+// h1, which would be more proper anyway.
+.anchor::before {
+  content: "#";
+  width: 1.75rem;
+  display: inline-block;
+  margin-left: -1.75rem;
+  opacity: 0;
+}
+
+h1:hover > .anchor::before {
+  opacity: 1;
+}
+
+h1:target > .anchor::before {
+  opacity: 1;
+  color: var(--primary-accent-color);
+}
