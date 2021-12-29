@@ -64,6 +64,13 @@ main.content {
   margin-right: auto;
 }
 
+header {
+  margin-top: 1.4em;
+  margin-bottom: 1.4em;
+  margin-left: 2.8em;
+  margin-right: 2.8em;
+}
+
 // TODO: It might be worth adding an [extra] section for a "display title" to
 // allow <br> elements for more manual control over title display.
 header > h1 {
@@ -71,9 +78,25 @@ header > h1 {
   font-size: var(--header-font-size);
   line-height: 3.6rem; // TODO: Is this actually a good idea?
   font-family: var(--default-sans-font);
+  padding-top: 2.8rem;
+  margin-top: 0;
+  margin-bottom: 0.7rem;
+}
+
+header .post-meta {
+  text-align: center;
+  padding-top: 0.5em;
+  padding-bottom: 0.9em;
+  margin-bottom: 0;
+}
+
+.post-meta time {
+  // TODO: This color doesn't look great in with a light color scheme...
+  color: var(--muted-color);
 }
 
 p {
+  padding-top: 0.4em;
   margin-bottom: 1em;
 }
 
@@ -156,3 +179,6 @@ h1:target > .anchor::before {
   opacity: 1;
   color: var(--primary-accent-color);
 }
+
+// TODO: Improve tables, header spacing (size?), and post-meta styling.
+// Is <section> a relevant element?
