@@ -6,7 +6,7 @@
 @import url('https://fonts.googleapis.com/css?family=Noto+Sans|Noto+Serif|Noto+Sans+Mono');
 
 :root {
-  // Fonts and Text Sizes
+  /* Fonts and Text Sizes */
   --default-serif-font: "Noto Serif", serif;
   --default-sans-font: "Noto Sans", sans-serif;
   --default-mono-font: "Noto Sans Mono", monospace;
@@ -16,12 +16,12 @@
      overlapping. */
   --default-line-height: 1.5;
 
-  // Gruvbox Dark Colors
+  /* Gruvbox Dark Colors */
   --background-color: #1d2021;
   --foreground-color: #ebdbb2;
   --primary-accent-color: #b16286;
 
-  // Common Colors
+  /* Common Colors */
   --link-color: #458588;
   --muted-color: #928374;
   --secondary-accent-color: #689d6a;
@@ -29,7 +29,7 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    // Gruvbox Light Colors
+    /* Gruvbox Light Colors */
     --background-color: #f9f5d7;
     --foreground-color: #3c3836;
     --primary-accent-color: #8f3f71;
@@ -108,10 +108,10 @@ a {
 }
 
 blockquote {
-  // Default text uses serif, so use sans-serif to differentiate quoted text.
+  /* Default text uses serif, so use sans-serif to differentiate quoted text. */
   font-family: var(--default-sans-font);
   font-style: italic;
-  // Indent blockquotes, but align the start with where text in code begins.
+  /* Indent blockquotes, but align the start with where text in code begins. */
   margin: 0 1.25rem;
   padding-left: 1.25rem;
   padding-right: 1.25rem;
@@ -119,18 +119,18 @@ blockquote {
 }
 
 img, video {
-  // Images/videos should fill the width of their containers if possible.
+  /* Images/videos should fill the width of their containers if possible. */
   width: 100%;
   height: auto;
 }
 
 figure {
-  // Don't add margins to figures.
+  /* Don't add margins to figures. */
   margin: 0;
 }
 
 figcaption {
-  // De-emphasize figure captions.
+  /* De-emphasize figure captions. */
   font-size: 0.85rem;
   color: var(--muted-color);
 }
@@ -145,8 +145,8 @@ pre {
 code {
   padding: 0 0.4rem;
   background-color: #3c3836;
-  // Inline code blocks look less aggresive with a little rounding.
-  border-radius: 3px;
+  /* Inline code blocks look less aggresive with a little rounding. */
+  border-radius: 2px;
 }
 
 pre, code {
@@ -154,8 +154,8 @@ pre, code {
   font-family: var(--default-mono-font);
 }
 
-// Without this the <code> tag gains a little padding that offsets text by like
-// 2 pixels. Let's *not* do that.
+/* Without this the <code> tag gains a little padding that offsets text by like
+   2 pixels. Let's *not* do that. */
 pre > code {
   padding: 0;
   background-color: #282828;
@@ -168,22 +168,58 @@ h2, h3, h4, h5, h6 {
   margin-bottom: 0.2rem;
 }
 
-// Add a # to the left of a subheading when it references an internal link...
+/* Add a # to the left of a subheading when it references an internal link... */
 :where(h2, h3, h4, h5, h6) > a[href^="#"]::before {
   content: "#";
   margin-left: -1.75rem;
   opacity: 0;
 }
 
-// ... but only display the internal anchor link when hovered over.
+/* ... but only display the internal anchor link when hovered over. */
 :where(h2, h3, h4, h5, h6):hover > a[href^="#"]::before {
   opacity: 1;
 }
 
-// When internal links are linked directly, display with the accent color.
+/* When internal links are linked directly, display with the accent color. */
 :where(h2, h3, h4, h5, h6):target > a[href^="#"]::before {
   opacity: 1;
   color: var(--primary-accent-color);
+}
+
+table {
+  /* XXX: Use flexbox for centering? Frankly, this is still bad on mobile.
+  display: flex;
+  justify-content: center;
+  */
+  display: block;
+  overflow-x: auto;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+/* Headers in a row (column scoped) get a colored bottom border. */
+th[scope="col"] {
+  padding-top: 0.4em;
+  border-bottom: 3px solid var(--secondary-accent-color);
+}
+
+/* Headers in a column (row scoped) get a colored right border. */
+th[scope="row"] {
+  border-right: 3px solid var(--secondary-accent-color);
+}
+
+td {
+  text-align: center;
+  border: 1px solid var(--muted-color);
+}
+
+th, td {
+  vertical-align: bottom;
+  padding-left: 0.4em;
+  padding-right: 0.4em;
+  border: 1px solid var(--muted-color);
 }
 
 // TODO: Improve tables. Support footnotes or asides for notes?
