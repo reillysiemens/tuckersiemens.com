@@ -47,7 +47,7 @@ problems at all if my `user.email` matched my GPG key to begin with, but
 hindsight is 20/20. As it stands, I have a problem and I need to fix it. I need
 to modify the authorship of these commits to match the email in my GPG key.
 
-# How to Fix It
+## How to Fix It
 
 I recently learned that `git` has a tool called `git filter-branch` that can be
 used to make significant and otherwise tedious modifications to `git` history.
@@ -69,7 +69,7 @@ A royally screwed up commit log. <a href='git-filter-wat.png'>View full size.</a
 
 Oh. No. Something is _clearly_ wrong. Looks more like `git filter-wat`.
 
-# How to Actually Fix It
+## How to Actually Fix It
 
 To be honest, I half expected something like this to happen. With the previous
 command I was never asked to resign these commits. The text of my commit
@@ -124,7 +124,7 @@ preserved. In order to get my changes up to GitHub I'll have to
 time this is probably a bad idea, but this repository exists just for me, so I
 feel comfortable taking the sledgehammer approach.
 
-# Back to Square One
+## Back to Square One
 
 <figure>
 <img src='signature-doesnt-match-committer.png' alt="Signature Doesn't Match Committer">
@@ -232,7 +232,7 @@ that git objects had separate authors and committers. GitHub was right all
 along. The email in my signature _doesn't_ match the committer email. I'll bet
 I can leverage `git filter-branch` again to finally fix this.
 
-# How to Actually Actually Fix It (A.K.A Tell Git Who's Boss)
+## How to Actually Actually Fix It (A.K.A Tell Git Who's Boss)
 
 Just as there is a `GIT_AUTHOR_EMAIL` environment variable to use in a filter,
 there is also a `GIT_COMMITTER_EMAIL`. Now I can simply
@@ -281,7 +281,7 @@ Not <em>quite</em> there yet. <a href='messed-up-git-graph.png'>View full size.<
 </figcaption>
 </figure>
 
-# Success
+## Success
 
 For the third time [Stack Overflow saves my bacon] and
 ```bash

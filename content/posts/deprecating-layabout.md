@@ -14,7 +14,7 @@ that I've decided to deprecate Layabout.
 
 <!-- more -->
 
-# When?
+## When?
 
 Layabout is officially deprecated on **January 1st, 2020** along with Python 2
 (_finally_ 😉). I'll be rolling out documentation changes and adding
@@ -23,7 +23,7 @@ Layabout will continue to function as long as the API interface supported by
 the 1.0 Slack library is supported, but you should transition off of it as soon
 as you are able. I recommend using the 2.0 Slack library instead.
 
-# Why?
+## Why?
 
 In May, [Rodney Urquhart] and contributors [rewrote the slackclient library]
 from the ground up in a way that closely matched some of the design decisions I
@@ -81,7 +81,7 @@ annotations. The official library also adds `async` support. It should be
 relatively straightforward to translate a Layabout application to using the
 offical library.
 
-## Event-oriented decorator API
+### Event-oriented decorator API
 
 At the time that I wrote Layabout, the slackclient library provided more of a
 low-level API, so Layabout functioned as a refinement on reading from the
@@ -91,7 +91,7 @@ important thing that the official library does differently is give you a
 `payload` dictionary rather than individual arguments. Both a `slack` instance
 and an `event` are included in that `payload`, so this is a minor change.
 
-## Async
+### Async
 
 The rewrite of the slackclient library brought with it clever, optional support
 for [Python's `async`/`await` syntax][async await]. At the time I was writing
@@ -102,7 +102,7 @@ will give a big advantage over Layabout here. If you've structured your
 Layabout callbacks well and haven't done necessarily synchronous operations,
 then you should be fine here.
 
-## Type annotations
+### Type annotations
 
 Like Layabout, the slackclient library now has [type annotations], which I
 think are a fantastic addition to Python. If you choose to add a type checker
@@ -110,7 +110,7 @@ like [mypy] or [Pyre] to your toolkit, you can get the benefit of optional
 static analysis. Layabout no longer provides an extra service since this is
 supported by the slackclient library directly.
 
-# What's Missing?
+## What's Missing?
 
 There are three main pieces of functionality that Layabout still provides that
 aren't available with the official slackclient library.
@@ -142,7 +142,7 @@ features, they're probably better suited to be suggestions or pull requests to
 the official library now.
 
 
-# Thanks
+## Thanks
 
 If you used Layabout, _thank you_. I hope you got as much joy out of it as a
 user as I got in writing it. I would also like to thank these fine folks for

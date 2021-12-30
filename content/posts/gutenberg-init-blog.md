@@ -18,7 +18,7 @@ finally decided to ditch Hexo.
 
 <!-- more -->
 
-# Replacement Criteria
+## Replacement Criteria
 
 Of course, I needed a suitable replacement. I wanted it to
 
@@ -44,7 +44,7 @@ write, build, and reload cycle is too tedious to forgo live reloading. I simply
 didn't want to use a markup language other than Markdown because writing it is
 effortless for me at this point.
 
-# The Hunt
+## The Hunt
 
 I [surveyed the landscape][staticgen], but didn't find
 anything to my liking, so I procrastinated even more. Then I happened across an
@@ -59,7 +59,7 @@ get a rudimentary POC using Tera operational just in time for
 [announce Gutenberg][announcing Gutenberg]. It met all my replacement criteria,
 used the templating engine I was interested in, and was written in Rust!
 
-# Building My New Site
+## Building My New Site
 
 Once I found Gutenberg I attacked fixing up my site with [vigor][vigor]. I
 wrote my own templates, learned a little [Sass][Sass], and even managed to make
@@ -77,14 +77,14 @@ I also had time to add custom [**404 Not Found**][404] and
 [**50x Server Error**][50x] pages. If you're interested in more little details,
 you can find the source for the redesigned site on [GitHub][GitHub repo].
 
-# Credit Where Credit Is Due
+## Credit Where Credit Is Due
 
 This would not have been possible without Vincent's hard work on Tera and
 Gutenberg. I also borrowed a great deal from [Alex Sun][Alex Sun]'s
 [vida][vida] Jekyll theme in writing this site's Sass. I've learned a lot from
 both of them. Thanks!
 
-# What's Next?
+## What's Next?
 
 This site is in a much better place than it was a year ago. I understand it
 better and I'm more motivated to continue working on it, so expect more posts!

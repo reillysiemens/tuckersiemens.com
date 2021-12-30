@@ -68,7 +68,7 @@ Update our example above to include `[` and `]` and voilà! It just works.
 
 Armed with that knowledge we can dive into the problem. 🤿
 
-# Works On My Machine
+## Works On My Machine
 
 A few months ago a co-worker of mine wrote a seemingly innocuous function.
 
@@ -148,7 +148,7 @@ interpreter for a quick sanity check.
 
 <img src='confused-jeff-bridges.webp' alt='Confused Jeff Bridges' style='display: block; width: 100%;'>
 
-# What On Htrae?
+## What On Htrae?
 
 If, like Jeff Bridges, you were confused by that result, _relax_. We're
 probably not in a [Bizarro World] where `node.example.com` is a valid IPv6
@@ -177,7 +177,7 @@ different manner.
 Python 3 knows that's not an IPv6 address, so why doesn't Python 2? The answer
 is in how differently the two Python versions handle text.
 
-# Text Is Hard
+## Text Is Hard
 
 Computers don't operate on text as humans think of it. They operate on numbers.
 That's part of why we have IP addresses to begin with. In order to represent
@@ -216,7 +216,7 @@ the right integer it will be displayed correctly.
 
 Neat, but what does that information do for us?
 
-# It's Numbers All The Way Down
+## It's Numbers All The Way Down
 
 Just for giggles, humor me and let's look at the character-number translations
 for `node.example.com`. We'll leave out binary and octal, because they make
@@ -313,7 +313,7 @@ True
 Sure enough, when you boil them both down to numbers they're the same mess of
 hexadecimal.
 
-# The Belly Of The Beast
+## The Belly Of The Beast
 
 If we dig into the source code for the Python 2 version of the
 [`ipaddress`][ipaddress2] module we ultimately come to a
@@ -364,7 +364,7 @@ IPv6Address(u'6e6f:6465:2e65:7861:6d70:6c65:2e63:6f6d')
 As it turns out, if you're liberal in your interpretation, `node.example.com`
 _can_ be an IPv6 address!
 
-# You Will Be Reading Meanings
+## You Will Be Reading Meanings
 
 Obviously that's hogwash. Bizarro might be proud, but that's not what we wanted
 to happen.
@@ -412,7 +412,7 @@ but why does Python 3 behave differently? More importantly, how can we
 reconcile the two?
 
 
-# 256 Characters Ought To Be Enough For Anybody
+## 256 Characters Ought To Be Enough For Anybody
 
 ASCII looked like a good idea in the 1960's. With decades of hindsight we
 know the 256 characters afforded to us by [Extended ASCII] are insufficient to
@@ -463,7 +463,7 @@ probably fix our bug.
 As an aside, if you want to learn more about how to handle Unicode in Python,
 check out [Ned Batchelder]'s talk on [_Pragmatic Unicode_][unipain].
 
-# How Did We Fix It?
+## How Did We Fix It?
 
 Python 2 does actually know about Unicode, but it considers Unicode text to
 be separate from "normal" text. At some point in Python 2 history the
@@ -529,7 +529,7 @@ and our tests pass!
 ✔ OK py39 in 2.506 seconds
 ```
 
-# Reflection
+## Reflection
 
 I mentioned above that our fix wasn't the best. Given more time, how can we do
 better?

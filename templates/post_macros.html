@@ -15,11 +15,11 @@
 
 {% macro snippet(page) %}
   <article>
-      <h2><a href="{{ page.permalink }}">{{ page.title }}</a></h1>
-      {{ self::meta(page=page) }}
-      {% if page.summary %}
-        {{ page.summary | safe }}
-      {% endif %}
-      <nav><a href="{{ page.permalink }}">Read More →</a></nav>
+    <h2><a href="{{ page.permalink }}">{{ page.title }}</a></h2>
+    {{ self::meta(page=page) }}
+    {% if page.summary %}
+      {{ page.summary | safe }}
+    {% endif %}
+    <nav><a href="{{ page.permalink }}">Read More →</a></nav>
   </article>
 {% endmacro snippet %}

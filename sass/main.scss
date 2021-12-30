@@ -6,13 +6,15 @@
 @import url('https://fonts.googleapis.com/css?family=Noto+Sans|Noto+Serif|Noto+Sans+Mono');
 
 :root {
-  // Fonts
+  // Fonts and Text Sizes
   --default-serif-font: "Noto Serif", serif;
   --default-sans-font: "Noto Sans", sans-serif;
   --default-mono-font: "Noto Sans Mono", monospace;
   --default-font-size: 18px;
   --header-font-size: 2.8em;
-  --default-line-height: 1.4em;
+  /* Not sure I like this as the default, but it keeps inline code blocks from
+     overlapping. */
+  --default-line-height: 1.5;
 
   // Gruvbox Dark Colors
   --background-color: #1d2021;
@@ -141,7 +143,7 @@ pre {
 }
 
 code {
-  padding: 0.05rem 0.125rem;
+  padding: 0 0.4rem;
   background-color: #3c3836;
   // Inline code blocks look less aggresive with a little rounding.
   border-radius: 3px;
@@ -161,24 +163,27 @@ pre > code {
   border-radius: unset;
 }
 
-// TODO: This probably doesn't need a separate class if h2 is used instead of
-// h1, which would be more proper anyway.
-.anchor::before {
+h2, h3, h4, h5, h6 {
+  padding-top: 1.2rem;
+  margin-bottom: 0.2rem;
+}
+
+// Add a # to the left of a subheading when it references an internal link...
+:where(h2, h3, h4, h5, h6) > a[href^="#"]::before {
   content: "#";
-  width: 1.75rem;
-  display: inline-block;
   margin-left: -1.75rem;
   opacity: 0;
 }
 
-h1:hover > .anchor::before {
+// ... but only display the internal anchor link when hovered over.
+:where(h2, h3, h4, h5, h6):hover > a[href^="#"]::before {
   opacity: 1;
 }
 
-h1:target > .anchor::before {
+// When internal links are linked directly, display with the accent color.
+:where(h2, h3, h4, h5, h6):target > a[href^="#"]::before {
   opacity: 1;
   color: var(--primary-accent-color);
 }
 
-// TODO: Improve tables, header spacing (size?), and post-meta styling.
-// Is <section> a relevant element?
+// TODO: Improve tables. Support footnotes or asides for notes?

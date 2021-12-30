@@ -12,7 +12,7 @@ TLD;R.
 
 <!-- more -->
 
-# Symptoms
+## Symptoms
 
 A few months ago I switched ISPs to try to support a smaller regional ISP
 instead of one of the [monopolistic][comcast] [behemoths][warner]. The
@@ -27,7 +27,7 @@ fed up when I was trying to `curl` pages from the same site in a loop. I
 noticed that the same pages took different amounts of time to fetch between
 runs of the loop, which seemed very wrong to me since they were static pages.
 
-# Troubleshooting
+## Troubleshooting
 
 My first step in narrowing down the problem was to pick a website known for its
 speed and reliability see if I had problems there. I `curl`ed
@@ -53,7 +53,7 @@ It's Always DNS. Converted to SVG from a <a href='https://www.reddit.com/r/sysad
 </figcaption>
 </figure>
 
-# Gathering Data
+## Gathering Data
 
 Clearly this was an intermittent DNS issue. I could have gone right into fixing
 the problem, but I wanted to know just how bad it was. In order to do that I
@@ -200,7 +200,7 @@ DNS requests. There's no reason they should have been taking **greater than 5
 seconds** to
 complete.
 
-# Resolution
+## Resolution
 
 I logged into my router's administrative console and sure enough, right there
 in the logs was a DNS error.
@@ -228,7 +228,7 @@ Ultimately I should probably run my own local DNS. Maybe I'll even take
 instead to simply change my nameservers to [Google's public ones][google-dns].
 The problem finally went away once recursive queries were being supported!
 
-# Measuring Success
+## Measuring Success
 
 Once I was confident I'd fixed the problem I ran the same chart generation
 commands as before, being careful to set `OUTPUT_FILE="after.csv"` so as not to
@@ -263,7 +263,7 @@ Prior to fixing the issue 11.66% of all requests took longer than 5 seconds.
 After applying the fix that dropped to 0.13%. I'd say that's a noticeable
 improvement!
 
-### Bonus
+#### Bonus
 
 In case you were curious about how the [_It's Always DNS_][its-always-dns]
 diagram above was generated, here's the [Graphviz][graphviz] source and `dot`

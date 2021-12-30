@@ -13,14 +13,14 @@ on [PyPI].
 
 <!-- more -->
 
-# What's It Good For?
+## What's It Good For?
 
 You can think of Layabout as a micro framework for building Slack bots. Since
 it wraps Slack’s RTM API it does best with tasks like interacting with users,
 responding to channel messages, and monitoring events. If you want more ideas
 on what you can do with it keep reading or check out the [examples].
 
-# Why?
+## Why?
 
 Why choose Layabout when the [Slack Events API] exists and there's already an
 officially supported [events library]? If these points resonate with you then
@@ -34,7 +34,7 @@ Layabout is for you.
 - You're satisfied with the large set of [events] supported by the
   [RTM API][Slack RTM API].
 
-# Why Not?
+## Why Not?
 
 Layabout won't be for everone and that's OK. If these points resonate with you
 then you probably _do_ want to use the official events library.
@@ -42,7 +42,7 @@ then you probably _do_ want to use the official events library.
 - You can't afford to have a persistent WebSocket connection in your
   application.
 
-# A Practical Example
+## A Practical Example
 
 If you want to download it and start playing with it as you read the rest of
 this blog post you can install it by running
@@ -102,7 +102,7 @@ In 28 lines of code we've used Layabout to do the following:
 Now that we've looked at what Layabout is, why you might want to use it, and
 how to use it let's look a bit deeper into its design and implementation.
 
-# Design
+## Design
 
 If you're familiar with the superb [Flask] library then Layabout probably looks
 eerily similar to you. That's no accident and hopefully [Armin Ronacher] thinks
@@ -183,7 +183,7 @@ Ultimately, I tried to write a library that I would want to use. I'm more
 excited now than ever to work with Slack's APIs, so in that regard I think this
 library is already a success.
 
-# Implementation
+## Implementation
 
 One of the hallmarks of this library is that it only supports Python 3.6+. I
 specifically chose to use only the most recent Python for three reasons:
@@ -203,7 +203,7 @@ self-contained you could conceivably spawn multiple instances into their own
 threads/processes and run them all simultaneously if you're careful with your
 global mutable state.
 
-## Async
+### Async
 
 Unfortunately I didn't see an easy way to use Python 3's
 [`async def`][async-def] because of the synchronous nature of `slackclient`'s
@@ -212,7 +212,7 @@ learn more about and event handling and async seem like a natural fit to me. If
 there's ever a reason to release a Layabout v2.0 I will probably push harder in
 this direction.
 
-## Type Annotations
+### Type Annotations
 
 From a development stance, the best part about this entire project so far has
 been learning how to use Python 3 [type annotations]. I miss
@@ -267,7 +267,7 @@ Despite that small inconvenience type annotations are **awesome**! Go use them!
 I now firmly believe that supplemental static analysis makes for better
 software, even in dynamically typed languages.
 
-## Run Method
+### Run Method
 
 As a final note on implementation, the [`Layabout.run`][layabout-run] method
 only has an `until` parameter because it made it **so** much easier for me to
@@ -289,14 +289,14 @@ def _forever(events: List[Dict[str, Any]]) -> bool:  # pragma: no cover
 Giving the looping conditional access to the events opened up enough
 possibilities that I decided to keep it as part of the design.
 
-# Thanks
+## Thanks
 
 I want to extend a special thank you to [Alex LordThorsen], [Geoff Shannon],
 [Kyle Rader], and [Mike Canoy] for their help during the initial development of
 this library. In particular the feedback I got on [PR #2][pr-2] was incredible
 and radically changed the library for the better.
 
-# What's Next?
+## What's Next?
 
 If you're still here and Layabout sounds like fun to you then check out these
 links to get started.

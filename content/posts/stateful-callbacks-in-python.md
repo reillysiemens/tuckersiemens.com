@@ -33,7 +33,7 @@ If we call `foo` like this
 
 then `bar` is a callback.
 
-# Why Should I Use A Callback?
+## Why Should I Use A Callback?
 
 There are many reasons to use callbacks. For me, the most compelling is
 customization. Let's take a look at a Python built-in as an example. Say we
@@ -84,7 +84,7 @@ to customize its behavior. All we have to do is define a function that returns
 the key we intend to sort by and as long as that's an orderable type Python
 will take care of the rest.
 
-# What Does It Mean to Have State?
+## What Does It Mean to Have State?
 
 So, by now we have something of an idea of what callbacks are, how we can use
 them, and why, but what's the point of state? State is most easily described as
@@ -101,7 +101,7 @@ involves keeping track of state.
 Basically, we need state if we care to remember what happened previously so
 that we can make decisions about what to do next.
 
-# What Normally Happens to State Inside a Callback?
+## What Normally Happens to State Inside a Callback?
 
 In our first callback function we didn't define any names. To demonstrate what
 typically happens to state inside the scope of a callback let's make a function
@@ -133,7 +133,7 @@ This is because when the function is finished executing its frame is removed
 from the [call stack][call stack] along with any locally defined variables. By
 itself our callback can't remember anything.
 
-# Stateful Callbacks
+## Stateful Callbacks
 
 Alright, so we know what callbacks are, we know what state is. How can we
 combine the two to make a callback that retains its state? As we saw above we
@@ -145,7 +145,7 @@ users like we did above, only now we have 1 Million users. It's going to take
 a while to sort those users, so it would be nice to have a progress report so
 we know something is still happening, maybe once per 10,000 users.
 
-## Using Functions
+### Using Functions
 
 To use names bound to an external scope with a plain ol' function as our
 callback we'll need to take advantage of [closures][closures] (which could be
@@ -183,7 +183,7 @@ call to `_sort_reporter` still gets to refer to the original `state`.
 3's `nonlocal` keyword, but then I'd miss an opportunity in the [bonus](#bonus)
 section.</small>
 
-## Using Classes
+### Using Classes
 
 If the functional approach doesn't suit you we can also tackle this problem
 from an object-oriented angle. Python lets classes define a
@@ -218,14 +218,14 @@ does. The `SortReporter` instance and all its associated state lives on because
 the `sorted` built-in is carrying around a reference to it and it just pretends
 to be a plain ol' function whenever `sorted` needs it to be one.
 
-## Which Should I Use?
+### Which Should I Use?
 
 Neither approach is any more or less valid than the other. For this particular
 example there isn't much more code or complexity either way. I generally regard
 functions as being simpler than classes, so I prefer those when possible, but
 classes also provide good structure for more complex callbacks. Try them both!
 
-### Bonus
+#### Bonus
 
 As <s>homework</s> a bonus, try instantiating a `SortReporter` and examining
 its `__dict__` attribute. Meditate on what you find there and how it relates
