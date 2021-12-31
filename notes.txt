@@ -1,0 +1,28 @@
+wider (828px)
+increase font size to 18px? what units to use site-wide? rem? em? px?
+mobile through media queries?
+noto sans mono (self hosted?) https://fonts.google.com/noto/specimen/Noto+Sans+Mono
+more font weights? why is bold so terrible?
+purple sidebar on code blocks
+fix code block colors whether pre > code or just code
+fix inline code blocks overlapping one another? line height? padding?
+remove pilcrow from anchor links, but keep anchors
+use gruvbox-like colorscheme
+fix block quotes
+make better tables
+fix template to make even better use of semantic HTML
+use a better footer
+drop vida inspiration note/license
+provide better top bar
+border bottom instead of underline for links? how to handle inline code snippets?
+plain CSS? how to minify?
+use CSS vars?
+use better seo?
+favicon
+twitter cards? opengraph? (look at https://andrew.kvalhe.im)
+robots.txt?
+merge https://github.com/reillysiemens/reillysiemens with about?
+minify html?
+
+
+https://www.sakugabooru.com/post/show/165603

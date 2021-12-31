@@ -1,0 +1,7 @@
+find better gifs
+fix deprecating layabout page
+find og:image picture (test discord/twitter/signal card?)
+figure out whether favicon needs work
+write blog post
+
+DO NOT FORGET TO CLEAN OUT WEB ROOT BEFORE PUSHING!

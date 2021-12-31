@@ -1,0 +1,19 @@
+CURRENT:
+
+/
+/about
+/projects
+/posts/node-example-com-is-an-ip-address
+
+NEW:
+
+/
+/contact
+/posts
+/posts/node-example-com-is-an-ip-address
+/tags
+/tags/python
+
+NAV:
+
+Posts Tags Contact

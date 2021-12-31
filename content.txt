@@ -1,0 +1,29 @@
+DO NOT FORGET RSS FEED!!!
+
+Technical:
+----------
+open graph (og:image?)
+:where() selector in vanilla CSS
+var() and :root
+<time> tag
+whitespace bug in anchor link
+font-variant-caps vs. c2sc and smcp
+
+trying, but ultimately not using  `@media (prefers-color-scheme: light) {}`
+didn't mesh with personal style, but is still a good idea for service pages
+
+if i were smarter, i would have built "mobile first", starting with the
+smallest viewport and building up from there. doing it backwards is very
+painful.
+
+Features Added:
+---------------
+Tags (taxonomies)
+Summaries on posts page
+
+Inspiration:
+------------
+Gruvbox
+Ruud van Asseldonk (GPL)
+Zola Example
+Others...
