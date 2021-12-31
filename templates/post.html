@@ -18,7 +18,7 @@ posts add article metadata. #}
 {% endblock meta %}
 
 {% block content %}
-  <main class="content">
+  <main>
     <article>
       <header>
         <h1>{{ page.title }}</h1>
@@ -27,4 +27,5 @@ posts add article metadata. #}
       {{ page.content | safe }}
     </article>
   </main>
+  {% include "footer.html" %}
 {% endblock content %}

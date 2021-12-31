@@ -1,6 +1,7 @@
 @charset "utf-8";
 
 // TODO: Should anything special be done for the <abbr> tag?
+// TODO: Support footnotes or asides for notes?
 
 // TODO: Load these from the local server instead of Google?
 @import url('https://fonts.googleapis.com/css?family=Noto+Sans|Noto+Serif|Noto+Sans+Mono');
@@ -50,7 +51,14 @@
   color: var(--primary-accent-color);
 }
 
+/* Required for sticky footer. */
+html, body {
+  height: 100%;
+}
+
 body {
+  display: flex; /* Required for sticky footer. */
+  flex-direction: column; /* Required for sticky footer. */
   margin: 0;
   line-height: var(--default-line-height);
   font-size: var(--default-font-size);
@@ -60,10 +68,14 @@ body {
   border-top: 0.5em solid var(--primary-accent-color);
 }
 
-main.content {
+main {
+  flex: 1 0 auto; /* Required for sticky footer. */
   max-width: 48em;
   margin-left: auto;
   margin-right: auto;
+  padding-right: 1.4em;
+  padding-left: 1.4em;
+  padding-bottom: 1.4em;
 }
 
 header {
@@ -222,4 +234,34 @@ th, td {
   border: 1px solid var(--muted-color);
 }
 
-// TODO: Improve tables. Support footnotes or asides for notes?
+footer {
+  border-top: 0.5em solid var(--primary-accent-color);
+  text-align: center;
+  background-color: #282828;
+  padding: 1.4em;
+  flex-shrink: 0; /* Required for sticky footer. */
+}
+
+footer a {
+  color: var(--primary-accent-color);
+}
+
+/* Give footer nav links some breathing room. */
+footer > nav > a {
+  margin: 0 1.4em;
+}
+
+footer p, footer a {
+  font-family: var(--default-sans-font);
+  /* It doesn't seem as though Google fonts support direct usage of OpenType
+     features like 'c2sc' and 'smcp'.
+
+     XXX: It's not clear why numerals don't seem to obey this property. */
+  font-variant-caps: all-small-caps;
+}
+
+@media (prefers-color-scheme: light) {
+  footer {
+    background-color: #fbf1c7;
+  }
+}

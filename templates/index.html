@@ -21,12 +21,13 @@
   </head>
   <body>
     {% block content %}
-      <main class="content">
+      <main>
         <header>
           <h1>{{ section.title }}</h1>
         </header>
         {{ section.content | safe }}
       </main>
+      {% include "footer.html" %}
     {% endblock content %}
   </body>
 </html>

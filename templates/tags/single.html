@@ -15,7 +15,7 @@
 {% endblock links %}
 
 {% block content %}
-  <main class="content">
+  <main>
     <header>
       <h1>Posts Tagged as "{{ term.name }}"</h1>
     </header>
@@ -23,4 +23,5 @@
       {{ post_macros::snippet(page=page) }}
     {% endfor %}
   </main>
+  {% include "footer.html" %}
 {% endblock content %}
