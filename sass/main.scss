@@ -14,7 +14,7 @@
   --default-sans-font: "Noto Sans", sans-serif;
   --default-mono-font: "Noto Sans Mono", monospace;
   --default-font-size: 16px;
-  --header-font-size: 2.8em;
+  --header-font-size: 2.0em;
   /* Not sure I like this as the default, but it keeps inline code blocks from
      overlapping. */
   --default-line-height: 1.5;
@@ -22,11 +22,9 @@
   /* Gruvbox Dark Colors */
   --background-color: #1d2021;
   --foreground-color: #ebdbb2;
-  --primary-accent-color: #b16286;
-
-  /* Common Colors */
   --link-color: #458588;
   --muted-color: #928374;
+  --primary-accent-color: #b16286;
   --secondary-accent-color: #689d6a;
 }
 
@@ -71,14 +69,13 @@ header {
   overflow: hidden; /* XXX: This WILL cut off titles that are too long! */
   margin-top: 1.4em;
   margin-bottom: 1.4em;
-  margin-left: 2.8em;
-  margin-right: 2.8em;
+  margin-left: 1em;
+  margin-right: 1em;
 }
 
 header > h1 {
   text-align: center;
   font-size: var(--header-font-size);
-  line-height: 3.6rem; // XXX: Is this increase actually a good idea?
   font-family: var(--default-sans-font);
   padding-top: 2.8rem;
   margin-top: 0;
@@ -97,14 +94,15 @@ header .post-meta {
   color: var(--muted-color);
 }
 
+h2, h3, h4, h5, h6 {
+  padding-top: 1.2rem;
+  margin-bottom: 0.2rem;
+}
+
+
 p {
   padding-top: 0.4em;
   margin-bottom: 1em;
-}
-
-a {
-  color: var(--link-color);
-  text-decoration: none;
 }
 
 blockquote {
@@ -118,8 +116,37 @@ blockquote {
   border-left: 3px solid var(--secondary-accent-color);
 }
 
+a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+/* ---- Anchor links --------------------------------------------------------*/
+
+/* Add a # to the left of a subheading when it references an internal link... */
+:where(h2, h3, h4, h5, h6) > a[href^="#"]::before {
+  content: "#";
+  display: inline-block;
+  width: 1.2rem;
+  margin-left: -1.2rem;
+  opacity: 0;
+}
+
+/* ... but only display the internal anchor link when hovered over. */
+:where(h2, h3, h4, h5, h6):hover > a[href^="#"]::before {
+  opacity: 1;
+}
+
+/* When internal links are linked directly, display with the accent color. */
+:where(h2, h3, h4, h5, h6):target > a[href^="#"]::before {
+  opacity: 1;
+  color: var(--primary-accent-color);
+}
+
+/* ---- Media ---------------------------------------------------------------*/
+
 img, video {
-  /* Images/videos should fill the width of their containers if possible. */
+  /* Media should fill the width of its container if possible. */
   width: 100%;
   height: auto;
 }
@@ -134,6 +161,8 @@ figcaption {
   font-size: 0.85rem;
   color: var(--muted-color);
 }
+
+/* ---- Code blocks ---------------------------------------------------------*/
 
 pre {
   display: block;
@@ -163,28 +192,7 @@ pre > code {
   border-radius: unset;
 }
 
-h2, h3, h4, h5, h6 {
-  padding-top: 1.2rem;
-  margin-bottom: 0.2rem;
-}
-
-/* Add a # to the left of a subheading when it references an internal link... */
-:where(h2, h3, h4, h5, h6) > a[href^="#"]::before {
-  content: "#";
-  margin-left: -1.75rem;
-  opacity: 0;
-}
-
-/* ... but only display the internal anchor link when hovered over. */
-:where(h2, h3, h4, h5, h6):hover > a[href^="#"]::before {
-  opacity: 1;
-}
-
-/* When internal links are linked directly, display with the accent color. */
-:where(h2, h3, h4, h5, h6):target > a[href^="#"]::before {
-  opacity: 1;
-  color: var(--primary-accent-color);
-}
+/* ---- Tables --------------------------------------------------------------*/
 
 table {
   /* XXX: Use flexbox for centering? Frankly, this is still bad on mobile.
@@ -222,6 +230,8 @@ th, td {
   border: 1px solid var(--muted-color);
 }
 
+/* ---- Footer, nav, and copyright ------------------------------------------*/
+
 footer {
   border-top: 0.5em solid var(--primary-accent-color);
   text-align: center;
@@ -231,12 +241,13 @@ footer {
 }
 
 footer a {
-  color: var(--primary-accent-color);
+  color: var(--secondary-accent-color);
 }
 
 /* Give footer nav links some breathing room. */
 footer > nav > a {
-  margin: 0 1.4em;
+  // margin: 0 1.4em;
+  margin: 0 0.4em;
 }
 
 footer p, footer a {
@@ -246,4 +257,43 @@ footer p, footer a {
 
      XXX: It's not clear why numerals don't seem to obey this property. */
   font-variant-caps: all-small-caps;
+}
+
+/* ---- Media Queries ------------------------------------------------------ */
+
+@media(min-width: 470px) {
+  :root {
+    --default-font-size: 17px;
+  }
+  /* Above this size, increase the header margins. Smaller sizes benefit from
+     extra breathing room in the title. */
+  header {
+    margin-left: 2.8em;
+    margin-right: 2.8em;
+  }
+}
+
+@media(min-width: 625px) {
+  :root { --default-font-size: 18px; }
+}
+
+@media(min-width: 802px) {
+  :root { --default-font-size: 19px; }
+}
+
+@media(min-width: 1003px) {
+  :root { --default-font-size: 20px; }
+}
+
+@media(min-width: 1225px) {
+  :root { --default-font-size: 21px; }
+  /* On larger devices, give the anchor link some more space. */
+  :where(h2, h3, h4, h5, h6) > a[href^="#"]::before {
+    width: 1.8rem;
+    margin-left: -1.8rem;
+  }
+}
+
+@media(min-width: 1496px) {
+  :root { --default-font-size: 22px; }
 }
