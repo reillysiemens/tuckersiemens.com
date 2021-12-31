@@ -8,7 +8,7 @@ tags = ["Python", "Testing", "Networking"]
 +++
 Hello! Welcome to the once-yearly blog post! This year I'd like to examine the
 most peculiar bug I encountered at work. To set the stage, let's start with a
-little background. 📚
+little background.
 
 <!-- more -->
 
