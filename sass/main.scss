@@ -3,8 +3,7 @@
    - Support footnotes or asides for notes sections.
    - Serve fonts from the local server rather than Google's API.
    - Support a "display title" in an [extra] section to allow for <br> elements
-     or other manual control over title display.
-*/
+     or other manual control over title display. */
 
 @charset "utf-8";
 @import url('https://fonts.googleapis.com/css?family=Noto+Sans|Noto+Serif|Noto+Sans+Mono');
@@ -14,7 +13,7 @@
   --default-serif-font: "Noto Serif", serif;
   --default-sans-font: "Noto Sans", sans-serif;
   --default-mono-font: "Noto Sans Mono", monospace;
-  --default-font-size: 18px;
+  --default-font-size: 16px;
   --header-font-size: 2.8em;
   /* Not sure I like this as the default, but it keeps inline code blocks from
      overlapping. */
@@ -54,6 +53,12 @@ body {
 
 main {
   flex: 1 0 auto; /* Required for sticky footer. */
+}
+
+/* XXX: For reasons that utterly bewilder me, an <article> with this id needs
+   to be inside a <main> with no id. I have a strong feeling I've done
+   something wrong here. */
+#content {
   max-width: 48em;
   margin-left: auto;
   margin-right: auto;
@@ -63,6 +68,7 @@ main {
 }
 
 header {
+  overflow: hidden; /* XXX: This WILL cut off titles that are too long! */
   margin-top: 1.4em;
   margin-bottom: 1.4em;
   margin-left: 2.8em;
