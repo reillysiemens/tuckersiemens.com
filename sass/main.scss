@@ -1,4 +1,5 @@
 /* TODO: Future considerations.
+   - Reset all margin and padding for * to 0.
    - Use the <abbr> tag for abbreviations.
    - Support footnotes or asides for notes sections.
    - Serve fonts from the local server rather than Google's API.
@@ -26,6 +27,8 @@
   --muted-color: #928374;
   --primary-accent-color: #b16286;
   --secondary-accent-color: #689d6a;
+  --code-background-color: #282828;
+  --inline-code-background-color: #3c3836;
 }
 
 .accent {
@@ -53,7 +56,7 @@ main {
   flex: 1 0 auto; /* Required for sticky footer. */
 }
 
-/* XXX: For reasons that utterly bewilder me, an <article> with this id needs
+/* FIXME: For reasons that utterly bewilder me, an <article> with this id needs
    to be inside a <main> with no id. I have a strong feeling I've done
    something wrong here. */
 #content {
@@ -66,7 +69,7 @@ main {
 }
 
 header {
-  overflow: hidden; /* XXX: This WILL cut off titles that are too long! */
+  overflow: hidden; /* FIXME: This WILL cut off titles that are too long! */
   margin-top: 1.4em;
   margin-bottom: 1.4em;
   margin-left: 1em;
@@ -173,7 +176,8 @@ pre {
 
 code {
   padding: 0 0.4rem;
-  background-color: #3c3836;
+  // background-color: #3c3836;
+  background-color: var(--inline-code-background-color);
   /* Inline code blocks look less aggresive with a little rounding. */
   border-radius: 2px;
 }
@@ -187,7 +191,7 @@ pre, code {
    2 pixels. Let's *not* do that. */
 pre > code {
   padding: 0;
-  background-color: #282828;
+  background-color: var(--code-background-color);
   // Code inside a pre block doesn't need rounded borders.
   border-radius: unset;
 }
@@ -195,7 +199,7 @@ pre > code {
 /* ---- Tables --------------------------------------------------------------*/
 
 table {
-  /* XXX: Use flexbox for centering? Frankly, this is still bad on mobile.
+  /* FIXME: Use flexbox for centering? Frankly, this is still bad on mobile.
   display: flex;
   justify-content: center;
   */
@@ -235,7 +239,9 @@ th, td {
 footer {
   border-top: 0.5em solid var(--primary-accent-color);
   text-align: center;
-  background-color: #282828;
+  /* FIXME: Using the code background color could look awkward if a post ends
+     in a code snippet. */
+  background-color: var(--code-background-color);
   padding: 1.4em;
   flex-shrink: 0; /* Required for sticky footer. */
 }
@@ -250,21 +256,24 @@ footer > nav > a {
   margin: 0 0.4em;
 }
 
+/* FIXME: This could probably go away with global margin/padding adjustments. */
+footer p {
+  padding-top: 0;
+}
+
 footer p, footer a {
   font-family: var(--default-sans-font);
   /* It doesn't seem as though Google fonts support direct usage of OpenType
      features like 'c2sc' and 'smcp'.
 
-     XXX: It's not clear why numerals don't seem to obey this property. */
+     FIXME: It's not clear why numerals don't seem to obey this property. */
   font-variant-caps: all-small-caps;
 }
 
 /* ---- Media Queries ------------------------------------------------------ */
 
 @media(min-width: 470px) {
-  :root {
-    --default-font-size: 17px;
-  }
+  :root { --default-font-size: 17px; }
   /* Above this size, increase the header margins. Smaller sizes benefit from
      extra breathing room in the title. */
   header {
