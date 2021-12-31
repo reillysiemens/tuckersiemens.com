@@ -1,9 +1,12 @@
+/* TODO: Future considerations.
+   - Use the <abbr> tag for abbreviations.
+   - Support footnotes or asides for notes sections.
+   - Serve fonts from the local server rather than Google's API.
+   - Support a "display title" in an [extra] section to allow for <br> elements
+     or other manual control over title display.
+*/
+
 @charset "utf-8";
-
-// TODO: Should anything special be done for the <abbr> tag?
-// TODO: Support footnotes or asides for notes?
-
-// TODO: Load these from the local server instead of Google?
 @import url('https://fonts.googleapis.com/css?family=Noto+Sans|Noto+Serif|Noto+Sans+Mono');
 
 :root {
@@ -85,12 +88,10 @@ header {
   margin-right: 2.8em;
 }
 
-// TODO: It might be worth adding an [extra] section for a "display title" to
-// allow <br> elements for more manual control over title display.
 header > h1 {
   text-align: center;
   font-size: var(--header-font-size);
-  line-height: 3.6rem; // TODO: Is this actually a good idea?
+  line-height: 3.6rem; // XXX: Is this increase actually a good idea?
   font-family: var(--default-sans-font);
   padding-top: 2.8rem;
   margin-top: 0;
