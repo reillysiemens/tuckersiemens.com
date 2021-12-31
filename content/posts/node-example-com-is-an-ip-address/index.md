@@ -223,7 +223,6 @@ for `node.example.com`. We'll leave out binary and octal, because they make
 this table uglier than it already is.
 
 <table>
-  <caption>
   <tbody>
     <tr>
       <th scope="row">Character</th>
