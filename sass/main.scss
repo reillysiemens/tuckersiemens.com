@@ -31,25 +31,6 @@
   --secondary-accent-color: #689d6a;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    /* Gruvbox Light Colors */
-    --background-color: #f9f5d7;
-    --foreground-color: #3c3836;
-    --primary-accent-color: #8f3f71;
-  }
-
-  // TODO: Can this be accomplished using a :root variable?
-  code {
-    color: #ebdbb2;
-  }
-
-  // TODO: Is this really the best way to accomplish this?
-  a > code {
-    color: var(--link-color);
-  }
-}
-
 .accent {
   color: var(--primary-accent-color);
 }
@@ -259,10 +240,4 @@ footer p, footer a {
 
      XXX: It's not clear why numerals don't seem to obey this property. */
   font-variant-caps: all-small-caps;
-}
-
-@media (prefers-color-scheme: light) {
-  footer {
-    background-color: #fbf1c7;
-  }
 }
