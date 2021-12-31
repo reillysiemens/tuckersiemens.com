@@ -7,8 +7,8 @@ You can find me on GitHub as [@reillysiemens] and on Twitter as
 domain dot com. You can use [my key] if you're willing to suffer the `gpg`
 interface.
 
-I'm not currently looking for employment opportunities and I _especially_ don't
-wish to be contacted about blockchains, cryptocurrencies, or NFTs.
+I'm not currently looking for employment opportunities, **especially** those
+related to blockchains, cryptocurrencies, or NFTs.
 
 [@reillysiemens]: https://github.com/reillysiemens
 [@TuckerSiemens]: https://twitter.com/TuckerSiemens
