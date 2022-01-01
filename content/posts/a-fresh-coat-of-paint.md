@@ -2,7 +2,7 @@
 title = "A Fresh Coat of Paint"
 description = "It's time for something new."
 url = "posts/a-fresh-coat-of-paint"
-date = 2020-12-31T21:04:00-08:00
+date = 2021-12-31T21:04:00-08:00
 [taxonomies]
 tags = ["webdev", "CSS", "HTML"]
 +++
