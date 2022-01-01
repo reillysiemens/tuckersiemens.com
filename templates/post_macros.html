@@ -2,7 +2,7 @@
   <div class="post-meta">
     <time datetime="{{ page.date }}">{{ page.date | date(format="%F") }}</time>
     {% if page.taxonomies.tags %}
-      <span class="accent">⬡</span>
+      <span class="accent"> ⬡ </span>
       {% for tag in page.taxonomies.tags %}
         <a href="{{ get_taxonomy_url(kind="tags", name=tag) }}">#{{ tag }}</a>
         {%- if page.taxonomies.tags | length > 1 and loop.index != page.taxonomies.tags | length -%}

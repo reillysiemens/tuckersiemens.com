@@ -24,7 +24,7 @@ Tucker's website.
 ## Inspiration
 
 The design of this website was inspired by [gruvbox], [Ruud van Asseldonk],
-[Andrew Kvalheim], [Alexis King], and many others.
+[Andrew Kvalheim], [Amos Wenger], [Alexis King], and many others.
 
 ## License
 
@@ -36,4 +36,5 @@ The code for this website is licensed under the [GPLv3](LICENSE).
 [gruvbox]: https://github.com/morhetz/gruvbox
 [Ruud van Asseldonk]: https://ruudvanasseldonk.com/
 [Andrew Kvalheim]: https://andrew.kvalhe.im/
+[Amos Wenger]: https://fasterthanli.me/
 [Alexis King]: https://lexi-lambda.github.io/
