@@ -3,9 +3,8 @@ title = "Contact"
 description = "Let's get in touch."
 +++
 You can find me on GitHub as [@reillysiemens] and on Twitter as
-[@TuckerSiemens]. If you want to email me, you can use my first name at this
-domain dot com. You can use [my key] if you're willing to suffer the `gpg`
-interface.
+[@TuckerSiemens]. To email me, you can use my first name at this domain dot
+com. If you're willing to suffer the `gpg` interface, you can use [my key].
 
 I'm not currently looking for employment opportunities, **especially** those
 related to blockchains, cryptocurrencies, or NFTs.
