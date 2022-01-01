@@ -5,9 +5,17 @@
 
 {% block meta %}
   <meta name="description" content="Posts tagged as {{ term.name }}">
+  <meta property="og:site_name" content="tuckersiemens.com">
+  <meta property="og:locale" content="en-us">
   <meta property="og:url" content="{{ current_url }}">
   <meta property="og:title" content="Tag - {{ term.name }}">
   <meta property="og:description" content="Posts tagged as {{ term.name }}">
+  <meta property="og:image" content="https://tuckersiemens.com/self.jpg">
+  <meta property="twitter:card" content="summary">
+  <meta property="twitter:site" content="@TuckerSiemens">
+  <meta property="twitter:title" content="Tag - {{ term.name }}">
+  <meta property="twitter:description" content="Posts tagged as {{ term.name }}">
+  <meta property="twitter:image" content="https://tuckersiemens.com/self.jpg">
 {% endblock meta %}
 
 {% block links %}

@@ -6,9 +6,17 @@
 {# Override base meta tags to use page-specific ones. #}
 {% block meta %}
   <meta name="description" content="{{ page.description }}">
+  <meta property="og:site_name" content="tuckersiemens.com">
+  <meta property="og:locale" content="en-us">
   <meta property="og:url" content="{{ page.permalink }}">
   <meta property="og:title" content="{{ page.title }}">
   <meta property="og:description" content="{{ page.description }}">
+  <meta property="og:image" content="https://tuckersiemens.com/self.jpg">
+  <meta property="twitter:card" content="summary">
+  <meta property="twitter:site" content="@TuckerSiemens">
+  <meta property="twitter:title" content="{{ page.title }}">
+  <meta property="twitter:description" content="{{ page.description }}">
+  <meta property="twitter:image" content="https://tuckersiemens.com/self.jpg">
 {% endblock meta %}
 
 {# Override base links to use page-specific ones. #}

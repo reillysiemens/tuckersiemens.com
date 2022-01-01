@@ -7,14 +7,22 @@
     <meta name="author" content="{{ config.extra.author }}">
     {% block meta %}
       <meta name="description" content="{{ section.description }}">
+      <meta property="og:site_name" content="tuckersiemens.com">
+      <meta property="og:locale" content="en-us">
       <meta property="og:url" content="{{ section.permalink }}">
       <meta property="og:title" content="{{ section.title }}">
       <meta property="og:description" content="{{ section.description }}">
       <meta property="og:type" content="profile">
+      <meta property="og:image" content="https://tuckersiemens.com/self.jpg">
+      <meta property="twitter:card" content="summary">
+      <meta property="twitter:site" content="@TuckerSiemens">
+      <meta property="twitter:title" content="{{ section.title }}">
+      <meta property="twitter:description" content="{{ section.description }}">
+      <meta property="twitter:image" content="https://tuckersiemens.com/self.jpg">
     {% endblock meta %}
     <link rel="dns-prefetch" href="https://fonts.googleapis.com/">
     <link rel="stylesheet" href="/main.css">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml">
     {% block links %}
       <link rel="canonical" href="{{ section.permalink }}">
     {% endblock links %}
