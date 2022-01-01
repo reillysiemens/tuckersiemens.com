@@ -1,6 +1,6 @@
 +++
 title = "Reilly Tucker Siemens"
-description = "The canonical web presence of Reilly Tucker Siemens."
+description = "Tucker's website."
 +++
 Hey, there! I'm Tucker. My pronouns are [he/him]. I enjoy hiking, yoga &amp;
 meditation, making cocktails, drinking coffee, and listening to a wide variety
