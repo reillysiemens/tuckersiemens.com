@@ -30,33 +30,62 @@ years of C/C++. Recent [statements][memory-safe-android] and
 [events][rust-linux-kernel] would seem to agree.
 
 If you know me, you might be surprised that this is my first post on Rust since
-I've been aggressively shilling the language for the last 7 years. 😂
+I've been hyping up the language for the last 7 years. Better late than never.
+😂
 
 ## What Is TFTP?
 
-TFTP is the [Trivial File Transfer Protocol][TFTP]. The basic protocol is
-currently defined by [RFC 1350]. In this post I'll focus only on the base
-protocol and none of its extensions (like [RFC 1782], which adds a 6th packet
-type). A production-ready TFTP server would involve more than what is written
-here.
-
-- Basic protocol overview
-- "lockstep protocol"
-- UDP
-- State machine diagram here?
+TFTP is the [Trivial File Transfer Protocol][TFTP], a simple means of reading
+and writing files over a network. Initially defined in the early 80s, the
+protocol was updated by [RFC 1350] in 1992. In this post I'll only cover RFC
+1350. Extensions like [RFC 2347], which adds a 6th packet type, won't be
+covered.
 
 ### A Note On Security
 
-TODO...
+TFTP is _not_ a secure protocol. It offers no access controls, no
+authentication, no encryption, nothing. If you're running a TFTP server assume
+that any other host on the network can read the files hosted by it. You should
+not run a TFTP server on the open Internet.
 
 ### Why Use TFTP?
 
-TODO...
+At this point you might wonder why you would want to use TFTP if it's old,
+insecure, and protocols like [HTTP] &amp; [SSH] exist. Fair enough. If you have other options,
+you probably don't need to use it.
 
-- DHCP
-- PXE
-- Multicast
-- Imaging large numbers of machines on a local network.
+That said, TFTP is still widely used, especially in server and lab environments
+where there are closed networks. Combined with [DHCP] and [PXE] it provides an
+efficient means of [network booting] due to its small memory footprint. This is
+especially important for embedded devices where memory is scarce. Additionally,
+if your server supports the experimental [multicast] option with [RFC 2090],
+files can be read by multiple clients concurrently.
+
+## Protocol Overview
+
+Now that we have a shared understanding of what TFTP is and when to use it,
+let's dive a little deeper into how it works.
+
+TFTP is implemented atop [UDP], which means it can't benefit from the
+retransmission and reliability inherent in [TCP]. Clients and servers must
+maintain their own connections. For this reason operations are carried out in
+lock-step, requiring acknowledgement at each point, so that nothing is lost or
+misunderstood.
+
+### Reading
+
+To read a file, a client client sends a read request packet. If the request is
+valid, the server responds with the first block of data (512 bytes by default).
+The client sends an acknowledgement of this block and the server responds with
+the next block of data. The two continue this dance until there's nothing more
+to read.
+
+### Writing
+
+Writing a file to a server is the inverse of reading. The client sends a write
+request packet and the server responds with an acknowledgement. Then the client
+sends the first block of data and the server responds with another
+acknowledgement. Rinse and repeat until the full file is transferred.
 
 ## Packet Types
 
@@ -146,9 +175,11 @@ own. In practice, maybe don't.
 
 ## Type Design
 
-Before I start parsing anything I find it helpful to try to design the
-resulting types. That informs both how I expect to use the types in my
-application code and my parsing machinery.
+Now we all know entirely too much about TFTP. Let's write some code already!
+
+Before I start parsing anything I find it helpful to design the resulting
+types. That informs both how I expect to use the types in my application code
+and my parsing machinery.
 
 Let's motivate this design by looking at the code that would use it.
 
@@ -171,9 +202,18 @@ TODO...
 
 [Go]: https://go.dev/
 [TFTP]: https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol
+[DHCP]: https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol
+[PXE]: https://en.wikipedia.org/wiki/Preboot_Execution_Environment
+[network booting]: https://en.wikipedia.org/wiki/Network_booting
+[multicast]: https://en.wikipedia.org/wiki/Multicast
+[RFC 2090]: https://www.rfc-editor.org/rfc/rfc2090
 [Rust]: https://www.rust-lang.org/
 [memory-safe-android]: https://security.googleblog.com/2022/12/memory-safe-languages-in-android-13.html
 [rust-linux-kernel]: https://lwn.net/Articles/910762/
 [RFC 1350]: https://www.rfc-editor.org/rfc/rfc1350
-[RFC 1782]: https://www.rfc-editor.org/rfc/rfc1782
+[RFC 2347]: https://www.rfc-editor.org/rfc/rfc2347
+[HTTP]: https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol
+[SSH]: https://en.wikipedia.org/wiki/Secure_Shell
+[UDP]: https://en.wikipedia.org/wiki/User_Datagram_Protocol
+[TCP]: https://en.wikipedia.org/wiki/Transmission_Control_Protocol
 [null-terminated strings]: https://en.wikipedia.org/wiki/Null-terminated_string
