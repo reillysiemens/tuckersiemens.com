@@ -126,7 +126,7 @@ error.
 
 <pre class="language-rust" data-lang="rust" style="background-color:#282828;color:#fdf4c1aa;"><code class="language-rust" data-lang="rust"><span style="color:#fa5c4b;">let</span><span> error </span><span style="color:#fe8019;">= </span><span style="color:#b8bb26;">b"<span style="color:#fa5c4b;">\x00\x05\x00\x01</span>File not found<span style="color:#fa5c4b;">\x00</span>"</span><span>;</span></code></pre>
 
-By default, TFTP defines eight error types. Since the error code is a 16-bit
+By default, TFTP defines eight error codes. Since the error code is a 16-bit
 integer there's enough space for you and your friends to define 65,528 of your
 own. In practice, maybe don't.
 
