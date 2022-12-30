@@ -41,7 +41,7 @@ protocol was updated by [RFC 1350] in 1992. In this post I'll only cover RFC
 1350. Extensions like [RFC 2347], which adds a 6th packet type, won't be
 covered.
 
-### A Note On Security
+### Security
 
 TFTP is _not_ a secure protocol. It offers no access controls, no
 authentication, no encryption, nothing. If you're running a TFTP server assume
@@ -72,6 +72,13 @@ maintain their own connections. For this reason operations are carried out in
 lock-step, requiring acknowledgement at each point, so that nothing is lost or
 misunderstood.
 
+<div style='display: flex;'>
+<img src='rrq.svg' alt='A sequence diagram for a TFTP read request.' style='display: inline-block;'>
+<img src='wrq.svg' alt='A sequence diagram for a TFTP write request.' style='display: inline-block;'>
+</div>
+
+_TODO: Write some custom CSS to make this work better._
+
 ### Reading
 
 To read a file, a client client sends a read request packet. If the request is
@@ -86,6 +93,11 @@ Writing a file to a server is the inverse of reading. The client sends a write
 request packet and the server responds with an acknowledgement. Then the client
 sends the first block of data and the server responds with another
 acknowledgement. Rinse and repeat until the full file is transferred.
+
+### Errors
+
+An error can be sent in response at any point in the transfer. This is always
+terminal. Errors are a courtesy and are neither acknowledged nor retransmitted.
 
 ## Packet Types
 
