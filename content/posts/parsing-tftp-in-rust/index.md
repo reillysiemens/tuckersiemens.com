@@ -50,9 +50,9 @@ not run a TFTP server on the open Internet.
 
 ### Why Use TFTP?
 
-At this point you might wonder why you would want to use TFTP if it's old,
-insecure, and protocols like [HTTP] &amp; [SSH] exist. Fair enough. If you have other options,
-you probably don't need to use it.
+If TFTP is old, insecure, and protocols like [HTTP] &amp; [SSH] exist, you
+might wonder why you'd even bother. Fair enough. If you have other options, you
+probably don't need to use it.
 
 That said, TFTP is still widely used, especially in server and lab environments
 where there are closed networks. Combined with [DHCP] and [PXE] it provides an
@@ -72,13 +72,6 @@ maintain their own connections. For this reason operations are carried out in
 lock-step, requiring acknowledgement at each point, so that nothing is lost or
 misunderstood.
 
-<div style='display: flex;'>
-<img src='rrq.svg' alt='A sequence diagram for a TFTP read request.' style='display: inline-block;'>
-<img src='wrq.svg' alt='A sequence diagram for a TFTP write request.' style='display: inline-block;'>
-</div>
-
-_TODO: Write some custom CSS to make this work better._
-
 ### Reading
 
 To read a file, a client client sends a read request packet. If the request is
@@ -87,6 +80,8 @@ The client sends an acknowledgement of this block and the server responds with
 the next block of data. The two continue this dance until there's nothing more
 to read.
 
+<img src='rrq.svg' alt='A sequence diagram for a TFTP read request.'>
+
 ### Writing
 
 Writing a file to a server is the inverse of reading. The client sends a write
@@ -94,15 +89,19 @@ request packet and the server responds with an acknowledgement. Then the client
 sends the first block of data and the server responds with another
 acknowledgement. Rinse and repeat until the full file is transferred.
 
+<img src='wrq.svg' alt='A sequence diagram for a TFTP write request.'>
+
 ### Errors
 
-An error can be sent in response at any point in the transfer. Most errors are
-terminal. Errors are a courtesy and are neither acknowledged nor retransmitted.
+An error can be sent in response at any point in the transfer. Most, if not
+all, errors are terminal. Errors are a courtesy and are neither acknowledged
+nor retransmitted.
 
 ## Packet Types
 
-RFC 1350 defines five packet types, given in the table below. I'll elaborate on
-each of them in turn.
+To cover the interactions above, RFC 1350 defines five packet types, each
+starting with a different 2 byte opcode. I'll elaborate on each of them in
+turn.
 
 | Opcode | Operation       | Abbreviation |
 |--------|:----------------|--------------|
@@ -125,6 +124,10 @@ Here's an example of the raw bytes in an `RRQ` for a file called `foobar.txt`
 in `octet` mode.
 
 <pre class="language-rust" data-lang="rust" style="background-color:#282828;color:#fdf4c1aa;"><code class="language-rust" data-lang="rust"><span style="color:#fa5c4b;">let</span><span> rrq </span><span style="color:#fe8019;">= </span><span style="color:#b8bb26;">b"<span style="color:#fa5c4b;">\x00\x01</span>foobar.txt<span style="color:#fa5c4b;">\x00</span>octet<span style="color:#fa5c4b;">\x00</span>"</span><span>;</span></code></pre>
+
+And here's a `WRQ` for the same file in the same mode.
+
+<pre class="language-rust" data-lang="rust" style="background-color:#282828;color:#fdf4c1aa;"><code class="language-rust" data-lang="rust"><span style="color:#fa5c4b;">let</span><span> wrq </span><span style="color:#fe8019;">= </span><span style="color:#b8bb26;">b"<span style="color:#fa5c4b;">\x00\x02</span>foobar.txt<span style="color:#fa5c4b;">\x00</span>octet<span style="color:#fa5c4b;">\x00</span>"</span><span>;</span></code></pre>
 
 ### `DATA`
 
