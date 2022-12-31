@@ -1,6 +1,6 @@
 +++
 title = "Parsing TFTP in Rust"
-description = "TODO"
+description = "Parsing TFTP in Rust"
 url = "posts/parsing-tftp-in-rust"
 date = 2022-12-31T00:00:00-08:00
 [taxonomies]
@@ -636,9 +636,8 @@ crafting custom errors. Thanks, [`@dtolnay`][dtolnay]!
 #[derive(Debug, PartialEq, thiserror::Error)]
 #[error("Error parsing packet")]
 pub struct ParsePacketError(nom::error::Error<Vec<u8>>);
-```
 
-```rust
+// Custom From impl because thiserror's #[from] can't tranlate this for us.
 impl From<nom::error::<&[u8]>> for ParsePacketError {
     fn from(err: nom::error::Error<&[u8]>) -> Self {
         ParseRequestError(nom::error::Error::new(err.input.to_vec(), err.code))
@@ -660,7 +659,9 @@ see a whole lot of benefit in having separate error types, so I reused
 
 #### Transfer Combinators
 
-> `TODO`
+The `Transfer` combinators are very similar to what we did for `Request`. The
+opcode handling is basically the same, but with different numeric values so we
+can't accidentally parse any other opcodes.
 
 ```rust
 use num_derive::FromPrimitive;
@@ -678,6 +679,10 @@ fn transfer_opcode(input: &[u8]) -> IResult<&[u8], TransferOpCode> {
 }
 ```
 
+For `Data` we just peel off the `u16` block number and then retain the
+[`rest`][rest] as the original `&[u8]`. The type alias here isn't necessary,
+but I like to do small things like this for organizational purposes.
+
 ```rust
 type Data<'a> = (u16, &'a [u8]);
 
@@ -686,6 +691,8 @@ fn data(input: &[u8]) -> IResult<&[u8], Data> {
 }
 ```
 
+`Ack` is, once again, the simplest. Just a named wrapper around [`be_u16`][be-u16].
+
 ```rust
 type Ack = u16;
 
@@ -693,6 +700,10 @@ fn ack(input: &[u8]) -> IResult<&[u8], Ack> {
     be_u16(input)
 }
 ```
+
+The `Error` variant is nearly as simple, but we need a call to
+[`Result::map`][result-map] to call [`Into`][into] impls and convert `code`
+from `u16` to `ErrorCode` and `message` from `&str` to `String`.
 
 ```rust
 type Error = (ErrorCode, String);
@@ -703,6 +714,12 @@ fn error(input: &[u8]) -> IResult<&[u8], Error> {
 }
 ```
 
+When we put it all these combinators together in a `transfer` function it looks
+more complex than our earlier `request` function, but that's only because there
+are more variants and my choice to use anonymous struct variants instead of
+tuple structs means there's no easy constructor, so we map over a closure.
+Otherwise the idea is the same as before.
+ 
 ```rust
 pub fn transfer(input: &[u8]) -> Result<Transfer, ParseTransferError> {
     let iresult = match opcode(input).finish()? {
@@ -724,6 +741,9 @@ pub fn transfer(input: &[u8]) -> Result<Transfer, ParseTransferError> {
 }
 ```
 
+Just like with `Request` we create a `Transfer::deserialize` method to hide
+these parsing details from the rest of our code.
+
 ```rust
 impl<'a> Transfer<'a> {
     pub fn deserialize(bytes: &'a [u8]) -> Result<Self, ParsePacketError> {
@@ -739,9 +759,10 @@ have noticed that you need to do the reverse if you're going to have a full
 TFTP conversation. Luckily, this serialization is (mostly) infallible, so
 there's less to explain.
 
-> `TODO` Talk about why `BufMut`
-
-> `TODO` Talk about potential for panic
+I used [`BytesMut`][bytes-mut] because I was already using the
+[`bytes`][bytes] crate for the extension methods on the [`BufMut`][buf-mut]
+trait like [`put_slice`][put-slice]. Plus, this way I avoid an accidental panic
+if I pass a `&mut [u8]` and forget to size it appropriately.
 
 ### Serializing `Request`
 
@@ -883,11 +904,11 @@ I'm more confident in it I'll definitely share more details. Meanwhile, I
 welcome any and all suggestions on how to make what I've written here more
 efficient and safe.
 
-> `TODO` Pin crates to specific links?
-
 > `TODO` Change `#Networking` tag to `#networking`?
 
 > `TODO` Stop highlighting all `enum` references.
+
+<!-- TODO: Pin crates.io links to specific versions? -->
 
 [Go]: https://go.dev/
 [TFTP]: https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol
@@ -949,6 +970,11 @@ efficient and safe.
 [dtolnay]: https://github.com/dtolnay
 [error-source]: https://doc.rust-lang.org/std/error/trait.Error.html#method.source
 [static-lifetimes]: https://doc.rust-lang.org/rust-by-example/scope/lifetime/static_lifetime.html
+[rest]: https://docs.rs/nom/7.1.1/nom/combinator/fn.rest.html
+[result-map]: https://doc.rust-lang.org/std/result/enum.Result.html#method.map
+[bytes-mut]: https://docs.rs/bytes/1.3.0/bytes/struct.BytesMut.html
+[buf-mut]: https://docs.rs/bytes/1.3.0/bytes/trait.BufMut.html
+[bytes]: https://crates.io/crates/bytes
 [put-u16]: https://docs.rs/bytes/1.3.0/bytes/trait.BufMut.html#method.put_u16
 [put-slice]: https://docs.rs/bytes/1.3.0/bytes/trait.BufMut.html#method.put_slice
 [put-u8]: https://docs.rs/bytes/1.3.0/bytes/trait.BufMut.html#method.put_u8
