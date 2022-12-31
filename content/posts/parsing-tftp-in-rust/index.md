@@ -96,7 +96,7 @@ acknowledgement. Rinse and repeat until the full file is transferred.
 
 ### Errors
 
-An error can be sent in response at any point in the transfer. This is always
+An error can be sent in response at any point in the transfer. Most errors are
 terminal. Errors are a courtesy and are neither acknowledged nor retransmitted.
 
 ## Packet Types
@@ -190,12 +190,23 @@ own. In practice, maybe don't.
 Now we all know entirely too much about TFTP. Let's write some code already!
 
 Before I start parsing anything I find it helpful to design the resulting
-types. That informs both how I expect to use the types in my application code
-and my parsing machinery.
+types. Even in my application code I put on my library developer hat so that I
+won't be annoyed with my own abstractions later on.
 
-Let's motivate this design by looking at the code that would use it.
+Let's motivate this design by looking at some code that would use it.
 
-- Showcase `tokio` UDP socket send/recv code.
+```rust
+let socket = UdpSocket::bind("127.0.0.1:6969")?;
+let mut buffer = [0; 512];
+let length = socket.recv(&mut buffer)?;
+let data = &buffer[..length]; // Our packet is in here!
+todo!("What now?");
+```
+
+In both [`std::net::UdpSocket`][std-udpsocket] and
+[`tokio::net::UdpSocket`][tokio-udpsocket] the interface that we have to
+work with packets requires that we use `&[u8]` (a [slice] of bytes).
+
 - Talk about `Request` vs. `Transfer` split.
 
 TODO...
@@ -229,3 +240,6 @@ TODO...
 [UDP]: https://en.wikipedia.org/wiki/User_Datagram_Protocol
 [TCP]: https://en.wikipedia.org/wiki/Transmission_Control_Protocol
 [null-terminated strings]: https://en.wikipedia.org/wiki/Null-terminated_string
+[std-udpsocket]: https://doc.rust-lang.org/std/net/struct.UdpSocket.html
+[tokio-udpsocket]: https://docs.rs/tokio/1.23.0/tokio/net/struct.UdpSocket.html
+[slice]: https://doc.rust-lang.org/std/primitive.slice.html
