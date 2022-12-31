@@ -7,9 +7,9 @@ date = 2022-12-31T00:00:00-08:00
 tags = ["Rust", "TFTP", "Networking", "parsing", "nom"]
 +++
 Several years ago I did a take-home interview which asked me to write a [TFTP]
-server in [Go]. I decided the job wasn't the right fit for me at the time, but
-the assignment and the protocol have stuck with me. Lately, in my spare time,
-I've been tinkering with a [Rust] implementation.
+server in [Go]. The job wasn't the right fit for me, but I enjoyed the
+assignment. Lately, in my spare time, I've been tinkering with a [Rust]
+implementation. Here's what I've done to parse the protocol.
 
 <!-- more -->
 
@@ -40,6 +40,9 @@ and writing files over a network. Initially defined in the early 80s, the
 protocol was updated by [RFC 1350] in 1992. In this post I'll only cover RFC
 1350. Extensions like [RFC 2347], which adds a 6th packet type, won't be
 covered.
+
+> `TODO`: Consider linking directly to the type design or parsing sections for
+> efficient (or knowledgable) readers.
 
 ### Security
 
@@ -72,13 +75,22 @@ maintain their own connections. For this reason operations are carried out in
 lock-step, requiring acknowledgement at each point, so that nothing is lost or
 misunderstood.
 
+Because files might be larger than what can fit into a single packet or even in
+memory, TFTP operates on chunks of a file, which it calls "blocks". In RFC 1350
+these blocks are always 512 bytes or less, but [RFC 1783] allows clients to
+negotiate different sizes which might be better on a particular network.
+
+By default, initial requests are received on port `69`, the offical port
+assigned to TFTP by [IANA]. Thereafter, the rest of a transfer is continued on
+a random port chosen by the server. This keeps the primary port free to receive
+additional requests.
+
 ### Reading
 
 To read a file, a client client sends a read request packet. If the request is
-valid, the server responds with the first block of data (512 bytes by default).
-The client sends an acknowledgement of this block and the server responds with
-the next block of data. The two continue this dance until there's nothing more
-to read.
+valid, the server responds with the first block of data. The client sends an
+acknowledgement of this block and the server responds with the next block of
+data. The two continue this dance until there's nothing more to read.
 
 <img src='rrq.svg' alt='A sequence diagram for a TFTP read request.'>
 
@@ -93,9 +105,8 @@ acknowledgement. Rinse and repeat until the full file is transferred.
 
 ### Errors
 
-An error can be sent in response at any point in the transfer. Most, if not
-all, errors are terminal. Errors are a courtesy and are neither acknowledged
-nor retransmitted.
+Errors are a valid response to any other packet. Most, if not all, errors are
+terminal. Errors are a courtesy and are neither acknowledged nor retransmitted.
 
 ## Packet Types
 
@@ -128,6 +139,21 @@ in `octet` mode.
 And here's a `WRQ` for the same file in the same mode.
 
 <pre class="language-rust" data-lang="rust" style="background-color:#282828;color:#fdf4c1aa;"><code class="language-rust" data-lang="rust"><span style="color:#fa5c4b;">let</span><span> wrq </span><span style="color:#fe8019;">= </span><span style="color:#b8bb26;">b"<span style="color:#fa5c4b;">\x00\x02</span>foobar.txt<span style="color:#fa5c4b;">\x00</span>octet<span style="color:#fa5c4b;">\x00</span>"</span><span>;</span></code></pre>
+
+#### Modes
+
+TFTP defines modes of transfer which describe how the bytes being transferred
+should be handled on the other end. There are three default modes.
+
+| mode     | meaning                                                        |
+|:---------|:---------------------------------------------------------------|
+| netascii | 8-bit [ASCII]; specifies control characters &amp; line endings |
+| octet    | raw 8-bit bytes; byte-for-byte identical on both ends          |
+| mail     | email the bytes to a user; obsolete even in 1992               |
+
+The protocol allows for other modes to be defined by cooperating hosts, but I
+can't recommend that. Honestly, `octet` mode is probably sufficient for most
+modern needs.
 
 ### `DATA`
 
@@ -199,32 +225,196 @@ won't be annoyed with my own abstractions later on.
 Let's motivate this design by looking at some code that would use it.
 
 ```rust
-let socket = UdpSocket::bind("127.0.0.1:6969")?;
 let mut buffer = [0; 512];
+let socket = UdpSocket::bind("127.0.0.1:6969")?;
 let length = socket.recv(&mut buffer)?;
-let data = &buffer[..length]; // Our packet is in here!
-todo!("What now?");
+
+let data = &buffer[..length];
+todo!("Get our packet out of data!");
 ```
 
 In both [`std::net::UdpSocket`][std-udpsocket] and
 [`tokio::net::UdpSocket`][tokio-udpsocket] the interface that we have to
-work with packets requires that we use `&[u8]` (a [slice] of bytes).
+work knows nothing about packets, only raw `&[u8]` (a [slice] of bytes).
 
-- Talk about `Request` vs. `Transfer` split.
+So, our task is to turn a `&[u8]` into something else. But what? In other
+implementations I've seen it's common to think of all 5 packet types as
+variations on a theme. We could follow suit, doing the Rusty thing and defining
+an `enum`.
 
-TODO...
+```rust
+enum Packet {
+    Rrq,
+    Wrq,
+    Data,
+    Ack,
+    Error,
+}
+```
+
+This is how I might have liked my Go implemenation to work. If Go even had
+enums! 😒
+
+This design choice has an unintended consequence though. As mentioned earlier,
+`RRQ` and `WRQ` only really matter on initial request. The remainder of the
+transfer isn't concerned with those variants. Even so, Rust's (appreciated)
+insistence on exhaustively matching patterns would make us write code like
+this.
+
+```rust
+match packet(&data)? {
+    Packet::Data => handle_data(),
+    Packet::Ack => handle_ack(),
+    Packet::Error => handle_error(),
+    _ => unreachable!("Didn't we already handle this?"),
+}
+```
+
+Also, you might be tempted to use [`unreachable!`][unreachable] for such code,
+but it actually _is_ reachable. A malicious client could send a request packet
+mid-connection and this design would allow it!
+
+Instead, what if we were more strict with our types and split the initial
+`Request` from the rest of the `Transfer`?
+
+### Requests
+
+Before we can talk about a `Request` we should talk about its parts. When we
+talked about packet types we saw that `RRQ` and `WRQ` only differed by opcode
+and the rest of the packet was the same, a `filename` and a `mode`.
+
+A `Mode` is another natural `enum`, but for our purposes we'll only bother with
+the `Octet` variant for now.
+
+```rust
+pub enum Mode {
+    // Netascii, for completeness.
+    Octet,
+    // Mail, if only to gracefully send an ERROR.
+}
+```
+
+A `Mode` combined with a `filename` make up the "inner type", which I'll call a
+`Payload` for lack of a better term. I've taken some liberties by declaring
+`filename` a [`PathBuf`][pathbuf], which we'll touch on _briefly_ in the
+[parsing section](#parsing).
+
+```rust
+pub struct Payload {
+    pub filename: PathBuf,
+    pub mode: Mode,
+}
+```
+
+Now we can define a `Request` as an `enum` where each variant has a `Payload`.
+
+```rust
+pub enum Request {
+    Read(Payload),
+    Write(Payload),
+}
+```
+
+### Transfers
+
+`Request`s take care of `RRQ` and `WRQ` packets, so a `Transfer` `enum` needs
+to take care of the remaining `DATA`, `ACK`, &amp; `ERROR` packets. Transfers
+are the meat of the protocol and more complex than requests. Let's break down
+each variant.
+
+#### `Data`
+
+The `Data` variant needs to contain the `block` number, which is 2 bytes and
+fits neatly into a [`u16`][u16]. It also needs to contain the raw bytes of the
+`data`. There are many ways to represent this, including using a [`Vec<u8>`][Vec] or a
+[`bytes::Bytes`][Bytes]. However, I think the most straightforward is as a
+`&[u8]` even though it introduces a [lifetime].
+
+#### `Ack`
+
+The `Ack` packet is the simplest and only needs a `block` number. We'll use a
+solitary `u16` for that.
+
+#### `Error`
+
+The `Error` variant warrants more consideration because of the well-defined
+error codes. I abhor [magic numbers] in my code, so I'll prefer to define another
+`enum` called `ErrorCode` for those. For the `message` a `String` should
+suffice.
+
+##### `ErrorCode`s
+
+Defining an `ErrorCode` involves more boilerplate than I'd like, so I'll show
+three variants and leave the remainder as an exercise for the reader.
+
+```rust
+#[derive(Copy, Clone)]
+pub enum ErrorCode {
+    Undefined,
+    FileNotFound,
+    // ...
+    Unknown(u16),
+}
+```
+
+For convenience I also added [`From`][from] implementations. One to convert from an `ErrorCode` to a `u16`.
+
+```rust
+impl From<ErrorCode> for u16 {
+    fn from(error_code: ErrorCode) -> Self {
+        match error_code {
+            ErrorCode::Undefined => 0,
+            ErrorCode::FileNotFound => 1,
+            // ...
+            ErrorCode::Unknown(n) => n,
+        }
+    }
+}
+```
+
+And another to convert from a `u16` to an `ErrorCode`.
+
+```rust
+
+impl From<u16> for ErrorCode {
+    fn from(code: u16) -> Self {
+        match code {
+            0 => Self::Undefined,
+            1 => Self::FileNotFound,
+            // ...
+            n => Self::Unknown(n),
+        }
+    }        
+}
+```
+
+Put it all together and we arrive at an `enum` that looks like this.
+
+```rust
+pub enum Transfer<'a> {
+    Data { block: u16, data: &'a [u8] },
+    Ack { block: u16 },
+    Error { code: ErrorCode, message: String },
+}
+```
 
 ## Parsing
 
-TODO...
+Now that we have a high-level type design to match our the low-level network
+representation we can bridge the two by parsing. There are as many ways to
+shave this [Yacc] as there were enums in our packet types, but I settled on the
+[`nom`][nom] library.
 
 ### What Is nom?
 
-TODO...
+> `TODO`
+> `TODO` What are parser combinators?
 
-### What Are Parser Combinators?
+### Defining Combinators
 
-TODO...
+## Serialization
+
+> `TODO`
 
 [Go]: https://go.dev/
 [TFTP]: https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol
@@ -238,11 +428,24 @@ TODO...
 [rust-linux-kernel]: https://lwn.net/Articles/910762/
 [RFC 1350]: https://www.rfc-editor.org/rfc/rfc1350
 [RFC 2347]: https://www.rfc-editor.org/rfc/rfc2347
+[RFC 1783]: https://www.rfc-editor.org/rfc/rfc1783
+[IANA]: https://en.wikipedia.org/wiki/Internet_Assigned_Numbers_Authority
 [HTTP]: https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 [SSH]: https://en.wikipedia.org/wiki/Secure_Shell
 [UDP]: https://en.wikipedia.org/wiki/User_Datagram_Protocol
 [TCP]: https://en.wikipedia.org/wiki/Transmission_Control_Protocol
+[ASCII]: https://en.wikipedia.org/wiki/ASCII
 [null-terminated strings]: https://en.wikipedia.org/wiki/Null-terminated_string
 [std-udpsocket]: https://doc.rust-lang.org/std/net/struct.UdpSocket.html
 [tokio-udpsocket]: https://docs.rs/tokio/1.23.0/tokio/net/struct.UdpSocket.html
 [slice]: https://doc.rust-lang.org/std/primitive.slice.html
+[unreachable]: https://doc.rust-lang.org/std/macro.unreachable.html
+[pathbuf]: https://doc.rust-lang.org/std/path/struct.PathBuf.html
+[u16]: https://doc.rust-lang.org/std/primitive.u16.html
+[lifetime]: https://doc.rust-lang.org/rust-by-example/scope/lifetime.html
+[magic numbers]: https://en.wikipedia.org/wiki/Magic_number_(programming)
+[from]: https://doc.rust-lang.org/std/convert/trait.From.html
+[Yacc]: https://en.wikipedia.org/wiki/Yacc
+[nom]: https://crates.io/crates/nom
+[Vec]: https://doc.rust-lang.org/std/vec/struct.Vec.html
+[Bytes]: https://docs.rs/bytes/1.3.0/bytes/struct.Bytes.html
