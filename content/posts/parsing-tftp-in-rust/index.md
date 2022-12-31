@@ -4,7 +4,7 @@ description = "Parsing TFTP in Rust"
 url = "posts/parsing-tftp-in-rust"
 date = 2022-12-31T00:00:00-08:00
 [taxonomies]
-tags = ["Rust", "TFTP", "Networking", "parsing", "nom"]
+tags = ["Rust", "TFTP", "Networking", "Parsing", "nom"]
 +++
 Several years ago I did a take-home interview which asked me to write a [TFTP]
 server in [Go]. The job wasn't the right fit for me, but I enjoyed the
@@ -497,14 +497,13 @@ it in the packet... Yes, I know why you did it, but I don't have to like it. ðŸ¤
 
 Mercifully, the nom toolkit has everything we need to slay this beast.
 
-```rust
-fn null_str(input: &[u8]) -> IResult<&[u8], &str> {
-    map_res(
-        tuple((take_till(|b| b == b'\x00'), tag(b"\x00"))),
-        |(s, _)| std::str::from_utf8(s),
-    )(input)
-}
-```
+<pre class="language-rust" data-lang="rust" style="background-color:#282828;color:#fdf4c1aa;"><code class="language-rust" data-lang="rust"><span style="color:#fa5c4b;">fn </span><span style="color:#8ec07c;">null_str</span><span>(</span><span style="color:#fdf4c1;">input</span><span>: </span><span style="color:#fe8019;">&amp;</span><span>[</span><span style="color:#fa5c4b;">u8</span><span>]) -&gt; IResult&lt;</span><span style="color:#fe8019;">&amp;</span><span>[</span><span style="color:#fa5c4b;">u8</span><span>], </span><span style="color:#fe8019;">&amp;</span><span style="color:#fa5c4b;">str</span><span>&gt; {
+</span><span>    </span><span style="color:#fabd2f;">map_res</span><span>(
+</span><span>        </span><span style="color:#fabd2f;">tuple</span><span>((</span><span style="color:#fabd2f;">take_till</span><span>(|</span><span style="color:#fdf4c1;">b</span><span>| b </span><span style="color:#fe8019;">== </span><span style="color:#b8bb26;">b</span><span style="color:#b8bb26;">'<span style="color:#fa5c4b;">\x00</span>'</span><span>), </span><span style="color:#fabd2f;">tag</span><span>(</span><span style="color:#b8bb26;">b</span><span style="color:#b8bb26;">"<span style="color:#fa5c4b;">\x00</span>"</span><span>))),
+</span><span>        |(</span><span style="color:#fdf4c1;">s</span><span>, _)| std::str::from_utf8(s),
+</span><span>    )(input)
+</span><span>}
+</span></code></pre>
 
 Let's work inside out to understand what `null_str` is doing.
 
@@ -572,11 +571,10 @@ To parse a `Mode` we [`map`][nom-map] the result of
 need to be _slightly_ more complex if we were supporting more than `octet` mode
 right now, but not by much.
 
-```rust
-fn mode(input: &[u8]) -> IResult<&[u8], Mode> {
-    map(tag_no_case(b"octet\x00"), |_| Mode::Octet)(input)
-}
-```
+<pre class="language-rust" data-lang="rust" style="background-color:#282828;color:#fdf4c1aa;"><code class="language-rust" data-lang="rust"><span style="color:#fa5c4b;">fn </span><span style="color:#8ec07c;">mode</span><span>(</span><span style="color:#fdf4c1;">input</span><span>: </span><span style="color:#fe8019;">&amp;</span><span>[</span><span style="color:#fa5c4b;">u8</span><span>]) -&gt; IResult&lt;</span><span style="color:#fe8019;">&amp;</span><span>[</span><span style="color:#fa5c4b;">u8</span><span>], Mode&gt; {
+</span><span>    </span><span style="color:#fabd2f;">map</span><span>(</span><span style="color:#fabd2f;">tag_no_case</span><span>(</span><span style="color:#b8bb26;">b</span><span style="color:#b8bb26;">"octet<span style="color:#fa5c4b;">\x00</span>"</span><span>), |_| Mode::Octet)(input)
+</span><span>}
+</span></code></pre>
 
 For a `Payload` we can use [`tuple`][tuple] with our `mode` combinator and
 `null_str` to match our filename. We then use a provided [`Into`][into] impl to
@@ -612,7 +610,7 @@ pub fn request(input: &[u8]) -> Result<Request, ParsePacketError> {
     iresult
         .finish()
         .map(|(_, request)| request)
-        .map_err(ParseRequestError::from)
+        .map_err(ParsePacketError::from)
 }
 ```
 
@@ -642,7 +640,7 @@ pub struct ParsePacketError(nom::error::Error<Vec<u8>>);
 // Custom From impl because thiserror's #[from] can't tranlate this for us.
 impl From<nom::error::<&[u8]>> for ParsePacketError {
     fn from(err: nom::error::Error<&[u8]>) -> Self {
-        ParseRequestError(nom::error::Error::new(err.input.to_vec(), err.code))
+        ParsePacketError(nom::error::Error::new(err.input.to_vec(), err.code))
     }
 }
 ```
@@ -723,7 +721,7 @@ tuple structs means there's no easy constructor, so we map over a closure.
 Otherwise the idea is the same as before.
  
 ```rust
-pub fn transfer(input: &[u8]) -> Result<Transfer, ParseTransferError> {
+pub fn transfer(input: &[u8]) -> Result<Transfer, ParsePacketError> {
     let iresult = match opcode(input).finish()? {
         (input, TransferOpCode::Data) => map(all_consuming(data), |(block, data)| {
             Transfer::Data { block, data }
@@ -739,7 +737,7 @@ pub fn transfer(input: &[u8]) -> Result<Transfer, ParseTransferError> {
     iresult
         .finish()
         .map(|(_, transfer)| transfer)
-        .map_err(ParseTransferError::from)
+        .map_err(ParsePacketError::from)
 }
 ```
 
@@ -846,40 +844,36 @@ A post on parsing wouldn't be complete without some tests showing that our code
 works as expected. First, we'll use the marvelous [`test-case`][test-case]
 crate to bang out a few negative tests on things we expect to be errors.
 
-> `TODO` Convert these examples to use the good byte highlighting.
-
-```rust
-#[test_case(b"\x00" ; "too small")]
-#[test_case(b"\x00\x00foobar.txt\x00octet\x00" ; "too low")]
-#[test_case(b"\x00\x03foobar.txt\x00octet\x00" ; "too high")]
-fn invalid_request(input: &[u8]) {
-    let actual = Request::deserialize(input);
-    // We don't care about the nom details, so ignore them with ..
-    assert!(matches!(actual, Err(ParseRequestError(..))));
-}
-```
+<pre class="language-rust" data-lang="rust" style="background-color:#282828;color:#fdf4c1aa;"><code class="language-rust" data-lang="rust"><span>#[</span><span style="color:#fdf4c1;">test_case</span><span>(</span><span style="color:#b8bb26;">b</span><span style="color:#b8bb26;">"<span style="color:#fa5c4b;">\x00</span>"</span><span> ; </span><span style="color:#b8bb26;">"too small"</span><span>)]
+</span><span>#[</span><span style="color:#fdf4c1;">test_case</span><span>(</span><span style="color:#b8bb26;">b</span><span style="color:#b8bb26;">"<span style="color:#fa5c4b;">\x00\x00</span>foobar.txt<span style="color:#fa5c4b;">\x00</span>octet<span style="color:#fa5c4b;">\x00</span>"</span><span> ; </span><span style="color:#b8bb26;">"too low"</span><span>)]
+</span><span>#[</span><span style="color:#fdf4c1;">test_case</span><span>(</span><span style="color:#b8bb26;">b</span><span style="color:#b8bb26;">"<span style="color:#fa5c4b;">\x00\x03</span>foobar.txt<span style="color:#fa5c4b;">\x00</span>octet<span style="color:#fa4c4b;">\x00</span>"</span><span> ; </span><span style="color:#b8bb26;">"too high"</span><span>)]
+</span><span style="color:#fa5c4b;">fn </span><span style="color:#8ec07c;">invalid_request</span><span>(</span><span style="color:#fdf4c1;">input</span><span>: </span><span style="color:#fe8019;">&amp;</span><span>[</span><span style="color:#fa5c4b;">u8</span><span>]) {
+</span><span>    </span><span style="color:#fa5c4b;">let</span><span> actual </span><span style="color:#fe8019;">= </span><span>Request::deserialize(input);
+</span><span>    </span><span style="font-style:italic;color:#928374;">// We don't care about the nom details, so ignore them with ..
+</span><span>    </span><span style="color:#fabd2f;">assert!</span><span>(</span><span style="color:#fabd2f;">matches!</span><span>(actual, </span><span style="color:#fabd2f;">Err</span><span>(ParsePacketError(</span><span style="color:#fe8019;">..</span><span>))));
+</span><span>}
+</span></code></pre>
 
 And, for good measure, we'll show that we can round-trip an `RRQ` packet from
 raw bytes with a stop at a proper enum in between.
 
-```rust
-#[test]
-fn roundtrip_rrq() -> Result<(), ParsePacketError> {
-    let before = b"\x00\x01foobar.txt\x00octet\x00";
-    let expected = Request::Read(Payload {
-        filename: "foobar.txt".into(),
-        mode: Mode::Octet,
-    });
-    
-    let packet = Request::deserialize(before)?;
-    // Use an under-capacity buffer to test panics.
-    let mut after = BytesMut::with_capacity(4);
-    packet.serialize(&mut after);
-    
-    assert_eq!(packet, expected);
-    assert_eq!(&before[..], after);
-}
-```
+<pre class="language-rust" data-lang="rust" style="background-color:#282828;color:#fdf4c1aa;"><code class="language-rust" data-lang="rust"><span>#[</span><span style="color:#fdf4c1;">test</span><span>]
+</span><span style="color:#fa5c4b;">fn </span><span style="color:#8ec07c;">roundtrip_rrq</span><span>() -&gt; </span><span style="color:#fabd2f;">Result</span><span>&lt;(), ParsePacketError&gt; {
+</span><span>    </span><span style="color:#fa5c4b;">let</span><span> before </span><span style="color:#fe8019;">= </span><span style="color:#b8bb26;">b</span><span style="color:#b8bb26;">"<span style="color:#fa5c4b;">\x00\x01</span>foobar.txt<span style="color:#fa5c4b;">\x00</span>octet<span style="color:#fa5c4b;">\x00</span>"</span><span>;
+</span><span>    </span><span style="color:#fa5c4b;">let</span><span> expected </span><span style="color:#fe8019;">= </span><span>Request::Read(Payload {
+</span><span>        filename: </span><span style="color:#b8bb26;">"foobar.txt"</span><span>.</span><span style="color:#fabd2f;">into</span><span>(),
+</span><span>        mode: Mode::Octet,
+</span><span>    });
+</span><span>    
+</span><span>    </span><span style="color:#fa5c4b;">let</span><span> packet </span><span style="color:#fe8019;">= </span><span>Request::deserialize(before)</span><span style="color:#fe8019;">?</span><span>;
+</span><span>    </span><span style="font-style:italic;color:#928374;">// Use an under-capacity buffer to test panics.
+</span><span>    </span><span style="color:#fa5c4b;">let mut</span><span> after </span><span style="color:#fe8019;">= </span><span>BytesMut::with_capacity(</span><span style="color:#d3869b;">4</span><span>);
+</span><span>    packet.</span><span style="color:#fabd2f;">serialize</span><span>(</span><span style="color:#fe8019;">&amp;</span><span style="color:#fa5c4b;">mut</span><span> after);
+</span><span>    
+</span><span>    </span><span style="color:#fabd2f;">assert_eq!</span><span>(packet, expected);
+</span><span>    </span><span style="color:#fabd2f;">assert_eq!</span><span>(</span><span style="color:#fe8019;">&amp;</span><span>before[</span><span style="color:#fe8019;">..</span><span>], after);
+</span><span>}
+</span></code></pre>
 
 Unless you want to copy/paste all this code you'll have to trust me that the
 tests pass. ðŸ˜‰ Don't worry, I've written many more tests, but this is a blog
@@ -905,8 +899,6 @@ The source code for the rest of the project is not currently public, but when
 I'm more confident in it I'll definitely share more details. Meanwhile, I
 welcome any and all suggestions on how to make what I've written here more
 efficient and safe.
-
-> `TODO` Change `#Networking` tag to `#networking`?
 
 <!-- TODO: Pin crates.io links to specific versions? -->
 
