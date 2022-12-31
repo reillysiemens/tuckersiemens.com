@@ -35,11 +35,14 @@ I've been hyping up the language for the last 7 years. Better late than never.
 
 ## What Is TFTP?
 
-TFTP is the [Trivial File Transfer Protocol][TFTP], a simple means of reading
-and writing files over a network. Initially defined in the early 80s, the
-protocol was updated by [RFC 1350] in 1992. In this post I'll only cover RFC
-1350. Extensions like [RFC 2347], which adds a 6th packet type, won't be
-covered.
+If you already know the ins and outs of TFTP feel free to skip to the
+[type design](#type-design) or [parsing](#parsing) sections.
+
+For those who don't know, TFTP is the [Trivial File Transfer Protocol][TFTP], a
+simple means of reading and writing files over a network. Initially defined in
+the early 80s, the protocol was updated by [RFC 1350] in 1992. In this post
+I'll only cover RFC 1350. Extensions like [RFC 2347], which adds a 6th packet
+type, won't be covered.
 
 > `TODO`: Consider linking directly to the type design or parsing sections for
 > efficient (or knowledgable) readers.
@@ -89,6 +92,7 @@ valid, the server responds with the first block of data. The client sends an
 acknowledgement of this block and the server responds with the next block of
 data. The two continue this dance until there's nothing more to read.
 
+<!-- TODO: Consider hosting the SVG's CSS locally for more control. -->
 <img src='rrq.svg' alt='A sequence diagram for a TFTP read request.'>
 
 ### Writing
@@ -98,6 +102,7 @@ request packet and the server responds with an acknowledgement. Then the client
 sends the first block of data and the server responds with another
 acknowledgement. Rinse and repeat until the full file is transferred.
 
+<!-- TODO: Consider hosting the SVG's CSS locally for more control. -->
 <img src='wrq.svg' alt='A sequence diagram for a TFTP write request.'>
 
 ### Errors
@@ -197,18 +202,18 @@ By default, TFTP defines eight error codes. Since the error code is a 16-bit
 integer there's enough space for you and your friends to define 65,528 of your
 own. In practice, maybe don't.
 
-| Value    | Meaning                                  |
-|----------|:-----------------------------------------|
-| 0        | Not defined, see error message (if any). |
-| 1        | File not found.                          |
-| 2        | Access violation.                        |
-| 3        | Disk full or allocation exceeded.        |
-| 4        | Illegal TFTP operation.                  |
-| 5        | Unknown transfer ID.                     |
-| 6        | File already exists.                     |
-| 7        | No such user.                            |
-| &hellip; | &hellip;                                 |
-| 65,535   | Go wild, do whatever.                    |
+| Value  | Meaning                                  |
+|--------|:-----------------------------------------|
+| 0      | Not defined, see error message (if any). |
+| 1      | File not found.                          |
+| 2      | Access violation.                        |
+| 3      | Disk full or allocation exceeded.        |
+| 4      | Illegal TFTP operation.                  |
+| 5      | Unknown transfer ID.                     |
+| 6      | File already exists.                     |
+| 7      | No such user.                            |
+| ...    | ...                                      |
+| 65,535 | Go wild, do whatever.                    |
 
 
 ## Type Design
@@ -232,7 +237,7 @@ todo!("Get our packet out of data!");
 
 In both [`std::net::UdpSocket`][std-udpsocket] and
 [`tokio::net::UdpSocket`][tokio-udpsocket] the interface that we have to
-work knows nothing about packets, only raw `&[u8]` (a [slice] of bytes).
+work knows nothing about packets, only raw `&[u8]` (a [slice] of [bytes][u8]).
 
 So, our task is to turn a `&[u8]` into something else. But what? In other
 implementations I've seen it's common to think of all 5 packet types as
@@ -268,8 +273,8 @@ match packet(&data)? {
 ```
 
 Also, you might be tempted to use [`unreachable!`][unreachable] for such code,
-but it actually _is_ reachable. A malicious client could send a request packet
-mid-connection and this design would allow it!
+but it actually _is_ reachable. An ill-behaved client could send a request
+packet mid-connection and this design would allow it!
 
 Instead, what if we were more strict with our types and split the initial
 `Request` from the rest of the `Transfer`?
@@ -335,9 +340,9 @@ solitary `u16` for that.
 #### `Error`
 
 The `Error` variant warrants more consideration because of the well-defined
-error codes. I abhor [magic numbers] in my code, so I'll prefer to define another
-`enum` called `ErrorCode` for those. For the `message` a `String` should
-suffice.
+[error codes](#error). I abhor [magic numbers] in my code, so I'll prefer to
+define another `enum` called `ErrorCode` for those. For the `message` a
+`String` should suffice.
 
 ##### `ErrorCode`
 
@@ -412,7 +417,7 @@ That way we still have a convenient method for conversions.
 
 ```rust
 let code = 42;
-let error = code.into();
+let error: ErrorCode = code.into();
 assert_eq!(error, ErrorCode::Unknown(42));
 ```
 
@@ -441,17 +446,183 @@ shave this [Yacc] as there were enums in our packet types, but I settled on the
 
 ### What Is nom?
 
-> `TODO`
+nom's own [readme][nom-readme] does a better job of describing itself than I
+ever could, so I'll just let it do the talking.
 
-> `TODO` What are parser combinators?
+> nom is a parser combinators library written in Rust. Its goal is to provide
+> tools to build safe parsers without compromising the speed or memory
+> consumption. To that end, it uses extensively Rust's strong typing and memory
+> safety to produce fast and correct parsers, and provides functions, macros
+> and traits to abstract most of the error prone plumbing.
+
+That sounds good and all, but what the heck is a parser combinator? Once again,
+nom has a great [description][nom-combinators] which I encourage you to read.
+The gist is that, unlike other approaches, parser combinators encourage you to
+give your parsing a functional flair. You construct small functions to parse
+the simplest patterns and gradually compose them to handle more complex inputs.
+
+nom has an extra advantage in that it is byte-oriented. It uses `&[u8]` as its
+base type, which makes it convenient for parsing network protocols. This is
+exactly the type we receive off the wire.
 
 ### Defining Combinators
 
+It's finally time to define some combinators and do some parsing! Even if
+you're familiar with Rust, nom combinators might look more like Greek to you.
+I'll explain the first one in depth to show how they work and then explain only
+the more confusing parts as we go along.
+
+#### Null Strings
+
+`null` references are famously a "[billion dollar mistake]", and I can't say I
+like `null` any better in a protocol.
+
+> Like all other strings, it is terminated with a zero byte.<br>
+> &mdash; RFC 1350, smugly
+
+Or, you know, just tell me how long the darn string is. You're the one who put
+it in the packet... Yes, I know why you did it, but I don't have to like it. 🤪
+
+Mercifully, the nom toolkit has everything we need to slay this beast.
+
+```rust
+fn null_str(input: &[u8]) -> IResult<&[u8], &str> {
+    map_res(
+        tuple((take_till(|b| b == b'\x00'), tag(b"\x00"))),
+        |(s, _)| std::str::from_utf8(s),
+    )(input)
+}
+```
+
+Let's work inside out to understand what `null_str` is doing.
+
+1. [`take_till`][take-till] accepts function (here we use a closure with `b`
+   for each byte) and collects up bytes from the `input` until one of
+   the bytes matches the null byte, `b'\x00'`. This gets us a `&[u8]` up until,
+   _but not including_, our zero byte.
+
+2. [`tag`][tag] here just recognizes the zero byte for completeness, but we'll
+   discard it later.
+
+3. [`tuple`][tuple] applies a tuple of parsers one by one and returns their
+   results as a tuple.
+
+4. [`map_res`][map-res] applies a function returning a [`Result`][result] over
+   the result of a parser. In this case that means we apply a closure,
+   `|(s, _)| ...`, where the first tuple element comes from our `take_till` and
+   the discarded `_` comes from our `tag`. This essentially gives us a nice way
+   to call a fallible function on the results of earlier parsing.
+
+5. [`std::str::from_utf8`][from-utf-8] inside our outermost closure converts
+   our `&[u8]` (now sans zero byte) into a Rust [`&str`][str], which is **not**
+   terminated with a zero byte.
+
+6. [`IResult<&[u8], &str>`][iresult] ties it all together at the end in
+   `null_str`'s return signature returning any unmatched `&[u8]` and a `&str`
+   if successful.
+
+nom combinators return `IResult`, a custom `Result` type generic over three
+types instead of the usual two.
+
+```rust
+pub type IResult<I, O, E = Error<I>> = Result<(I, O), Err<E>>;
+```
+
+These types are the input type`I`, the output type `O`,
+and the error type `E` (usually a [nom error][nom-error]). I understand this
+type to mean that `I` will be parsed to produce `O` and any leftover `I` as
+long as no error `E` happens.
+
+It's important to note that I'm taking another <u><b>huge</b></u> liberty here
+by converting these bytes to a Rust string at all. Rust strings are guaranteed
+to be valid [UTF-8][utf-8]. TFTP [predates UTF-8][utf-8-history], so the
+protocol did not specify that these strings should be Unicode. Later, I might
+prefer an [`OsString`][osstring], but for now non-Unicode strings will cause
+failures.
+
+> Please, only send me UTF-8 strings.<br>
+> &mdash; Me, wearily
+
+#### Request Combinators
+
+#### Transfer Combinators
+
 ## Serialization
 
-> `TODO`
+We can now read bytes into packets, which is handy, but astute readers will
+have noticed that you need to do the reverse if you're going to have a full
+TFTP conversation. I won't leave you hanging.
+
+```rust
+TODO
+```
+
+## Tests
+
+A post on parsing wouldn't be complete without some tests showing that our code
+works as expected. First, we'll use the marvelous [`test-case`][test-case]
+crate to bang out a few negative tests on things we expect to be errors.
+
+> `TODO` Convert these examples to use the good byte highlighting.
+
+```rust
+#[test_case(b"\x00" ; "too small")]
+#[test_case(b"\x00\x00foobar.txt\x00octet\x00" ; "too low")]
+#[test_case(b"\x00\x03foobar.txt\x00octet\x00" ; "too high")]
+fn invalid_request(input: &[u8]) {
+    let actual = Request::deserialize(input);
+    // We don't care about the nom details, so ignore them with ..
+    assert!(matches!(actual, Err(ParseRequestError(..))));
+}
+```
+
+And, for good measure, we'll show that we can round-trip an `RRQ` packet from
+raw bytes with a stop at a proper enum in between.
+
+```rust
+#[test]
+fn roundtrip_rrq() -> Result<(), ParsePacketError> {
+    let before = b"\x00\x01foobar.txt\x00octet\x00";
+    let expected = Request::Read(Payload {
+        filename: "foobar.txt".into(),
+        mode: Mode::Octet,
+    });
+    
+    let packet = Request::deserialize(before)?;
+    // Use an under-capacity buffer to test panics.
+    let mut after = BytesMut::with_capacity(4);
+    packet.serialize(&mut after);
+    
+    assert_eq!(packet, expected);
+    assert_eq!(&before[..], after);
+}
+```
+
+Unless you want to copy/paste all this code you'll have to trust me that the
+tests pass. 😉 Don't worry, I've written many more tests, but this is a blog
+post, not a test suite, so I'll spare you the details.
 
 ## `Ack`nowledgements
+
+Wow. You actually read all the way to the end. Congrats, and more importantly,
+thank you! 🙇‍♂️ 
+
+All of the work above is part of a personal project I chip away at
+in my spare time, but I don't do it alone. I owe a huge debt of gratitude to my
+friend &amp; Rust mentor, [Zefira], who has spent countless hours letting me
+pick her brain on every minute detail of
+this TFTP code. I could not have written this blog post without her!
+
+I also need to thank Yiannis M ([`@oblique`][oblique]) for their work on the
+[`async-tftp-rs`][async-tftp-rs] crate, from which I have borrowed liberally
+and learned a great deal.
+
+The source code for the rest of the project is not currently public, but when
+I'm more confident in it I'll definitely share more details.
+
+> `TODO` Pin crates to specific links?
+
+> `TODO` Change `#Networking` tag to `#networking`?
 
 [Go]: https://go.dev/
 [TFTP]: https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol
@@ -479,10 +650,30 @@ shave this [Yacc] as there were enums in our packet types, but I settled on the
 [unreachable]: https://doc.rust-lang.org/std/macro.unreachable.html
 [pathbuf]: https://doc.rust-lang.org/std/path/struct.PathBuf.html
 [u16]: https://doc.rust-lang.org/std/primitive.u16.html
+[u8]: https://doc.rust-lang.org/std/primitive.u8.html
 [lifetime]: https://doc.rust-lang.org/rust-by-example/scope/lifetime.html
 [magic numbers]: https://en.wikipedia.org/wiki/Magic_number_(programming)
 [from]: https://doc.rust-lang.org/std/convert/trait.From.html
 [Yacc]: https://en.wikipedia.org/wiki/Yacc
 [nom]: https://crates.io/crates/nom
+[nom-readme]: https://github.com/rust-bakery/nom/blob/6860641f1b003781f9dc1a91d0f631ff17400d1b/README.md
+[nom-combinators]: https://github.com/rust-bakery/nom/blob/6860641f1b003781f9dc1a91d0f631ff17400d1b/README.md#parser-combinators
+[billion dollar mistake]: https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/
+[take-till]: https://docs.rs/nom/7.1.1/nom/bytes/complete/fn.take_till.html
+[tag]: https://docs.rs/nom/7.1.1/nom/bytes/complete/fn.tag.html
+[tuple]: https://docs.rs/nom/7.1.1/nom/sequence/fn.tuple.html
+[map-res]: https://docs.rs/nom/7.1.1/nom/combinator/fn.map_res.html
+[result]: https://doc.rust-lang.org/core/result/enum.Result.html
+[from-utf-8]: https://doc.rust-lang.org/std/str/fn.from_utf8.html
+[str]: https://doc.rust-lang.org/std/primitive.str.html
+[iresult]: https://docs.rs/nom/7.1.1/nom/type.IResult.html
+[nom-error]: https://docs.rs/nom/7.1.1/nom/error/struct.Error.html
+[utf-8]: https://en.wikipedia.org/wiki/UTF-8
+[utf-8-history]: https://en.wikipedia.org/wiki/UTF-8#History
+[osstring]: https://doc.rust-lang.org/std/ffi/struct.OsString.html
 [Vec]: https://doc.rust-lang.org/std/vec/struct.Vec.html
 [Bytes]: https://docs.rs/bytes/1.3.0/bytes/struct.Bytes.html
+[test-case]: https://crates.io/crates/test-case
+[Zefira]: https://zefira.dev/
+[oblique]: https://github.com/oblique
+[async-tftp-rs]: https://crates.io/crates/async-tftp
