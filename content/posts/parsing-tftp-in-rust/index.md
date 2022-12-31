@@ -44,9 +44,6 @@ the early 80s, the protocol was updated by [RFC 1350] in 1992. In this post
 I'll only cover RFC 1350. Extensions like [RFC 2347], which adds a 6th packet
 type, won't be covered.
 
-> `TODO`: Consider linking directly to the type design or parsing sections for
-> efficient (or knowledgable) readers.
-
 ### Security
 
 TFTP is _not_ a secure protocol. It offers no access controls, no
@@ -544,11 +541,196 @@ failures.
 
 #### Request Combinators
 
-> `TODO`
+Since `Request` only concerns itself with the first two packet types, `RRQ` and
+`WRQ` we can start parsing by matching only those opcodes. For convenience I
+used the [`num-derive`][num-derive] crate to create a `RequestOpCode` enum so I
+could use [`num_traits::cast::FromPrimitive::from_u16`][from-u16].
+
+The `request_opcode` combinator uses [`map_opt`][map-opt] and
+[`be_u16`][be-u16] combinators to parse a `u16` out of the `input` and pass it
+to `from_u16` to construct a `RequestOpCode`.
+
+```rust
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
+#[derive(FromPrimitive)]
+enum RequestOpCode {
+    Rrq = 1,
+    Wrq = 2,
+}
+
+fn request_opcode(input: &[u8]) -> IResult<&[u8], RequestOpCode> {
+    map_opt(be_u16, RequestOpCode::from_u16)(input)
+}
+```
+
+To parse a `Mode` we [`map`][nom-map] the result of
+[`tag_no_case`][tag-no-case] onto our `Mode` constructor. This function would
+need to be _slightly_ more complex if we were supporting more than `octet` mode
+right now, but not by much.
+
+```rust
+fn mode(input: &[u8]) -> IResult<&[u8], Mode> {
+    map(tag_no_case(b"octet\x00"), |_| Mode::Octet)(input)
+}
+```
+
+For a `Payload` we can use [`tuple`][tuple] with our `mode` combinator and
+`null_str` to match our filename. We then use a provided [`Into`][into] impl to
+convert our filename `&str` to a `PathBuf`.
+
+```rust
+fn payload(input: &[u8]) -> IResult<&[u8], Payload> {
+    let (input, (filename, mode)) = tuple((null_str, mode))(input)?;
+    Ok((
+        input,
+        Payload {
+            filename: filename.into(),
+            mode,
+        },
+    ))
+}
+```
+
+Finally, we reach the top level of parsing and put all the rest together. The
+`request` function is not, itself, a combinator, which is why you see the
+[`Finish::finish`][nom-finish] calls here. We use
+[`all_consuming`][all-consuming] to ensure no input remains after parsing with
+`payload` and map the result to our respective `Read` and `Write` variants. We
+also hide nom errors inside a [custom error](#parsing-failures).
+
+```rust
+pub fn request(input: &[u8]) -> Result<Request, ParsePacketError> {
+    let iresult = match request_opcode(input).finish()? {
+        (input, RequestOpCode::Rrq) => map(all_consuming(payload), Request::Read)(input),
+        (input, RequestOpCode::Wrq) => map(all_consuming(payload), Request::Write)(input),
+    };
+
+    iresult
+        .finish()
+        .map(|(_, request)| request)
+        .map_err(ParseRequestError::from)
+}
+```
+
+With our combinators in order we can add a `Request::deserialize` method to our
+enum to hide the implementation details, making it much easier to switch
+parsing logic later if we want.
+
+```rust
+impl Request {
+    pub fn deserialize(bytes: &[u8]) -> Result<Self, ParsePacketError> {
+        parse::request(bytes)
+    }
+}
+```
+
+#### Parsing Failures
+
+You might have wondered where that `ParsePacketError` came from. It's right
+here. I used the [`thiserror`][thiserror] crate because it's invaluable when
+crafting custom errors. Thanks, [`@dtolnay`][dtolnay]!
+
+```rust
+#[derive(Debug, PartialEq, thiserror::Error)]
+#[error("Error parsing packet")]
+pub struct ParsePacketError(nom::error::Error<Vec<u8>>);
+```
+
+```rust
+impl From<nom::error::<&[u8]>> for ParsePacketError {
+    fn from(err: nom::error::Error<&[u8]>) -> Self {
+        ParseRequestError(nom::error::Error::new(err.input.to_vec(), err.code))
+    }
+}
+```
+
+You might also wonder why I converted from the original
+`nom::error::Error<&[u8]>` to `nom::error::Error<Vec<u8>>`. Apparently
+[`std::error::Error::source()`][error-source] requires errors to be
+`dyn Error + 'static`, so non-[static lifetimes][static-lifetimes] aren't
+allowed if you want to provide a backtrace, which I might like to do at some
+point. Also, it just seems reasonable for an `Error` type to own its data.
+
+While we were careful to split up our `Request` and `Transfer` types I didn't
+see a whole lot of benefit in having separate error types, so I reused
+`ParsePacketError` for `Transfer` as well.
+
 
 #### Transfer Combinators
 
 > `TODO`
+
+```rust
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
+#[derive(FromPrimitive)]
+enum TransferOpCode {
+    Data = 3,
+    Ack = 4,
+    Error = 5,
+}
+
+fn transfer_opcode(input: &[u8]) -> IResult<&[u8], TransferOpCode> {
+    map_opt(be_u16, TransferOpCode::from_u16)(input)
+}
+```
+
+```rust
+type Data<'a> = (u16, &'a [u8]);
+
+fn data(input: &[u8]) -> IResult<&[u8], Data> {
+    tuple((be_u16, rest))(input)
+}
+```
+
+```rust
+type Ack = u16;
+
+fn ack(input: &[u8]) -> IResult<&[u8], Ack> {
+    be_u16(input)
+}
+```
+
+```rust
+type Error = (ErrorCode, String);
+
+fn error(input: &[u8]) -> IResult<&[u8], Error> {
+    tuple((be_u16, null_str))(input)
+        .map(|(input, (code, message))| (input, (code.into(), message.into())))
+}
+```
+
+```rust
+pub fn transfer(input: &[u8]) -> Result<Transfer, ParseTransferError> {
+    let iresult = match opcode(input).finish()? {
+        (input, TransferOpCode::Data) => map(all_consuming(data), |(block, data)| {
+            Transfer::Data { block, data }
+        })(input),
+        (input, TransferOpCode::Ack) => {
+            map(all_consuming(ack), |block| Transfer::Ack { block })(input)
+        }
+        (input, TransferOpCode::Error) => map(all_consuming(error), |(code, message)| {
+            Transfer::Error { code, message }
+        })(input),
+    };
+
+    iresult
+        .finish()
+        .map(|(_, transfer)| transfer)
+        .map_err(ParseTransferError::from)
+}
+```
+
+```rust
+impl<'a> Transfer<'a> {
+    pub fn deserialize(bytes: &'a [u8]) -> Result<Self, ParsePacketError> {
+        parse::transfer(bytes)
+    }
+}
+```
 
 ## Serialization
 
@@ -565,16 +747,16 @@ there's less to explain.
 
 Serializing a `Request` packet is deceptively straightfoward. We use a `match`
 expression to pull our `Payload` out of the request and associate with with an
-`OpCode`. Then we just serialize the opcode as a `u16` with
-[`put_u16`][put-u16] The `filename` and `mode` we serialize as null-terminated
+`RequestOpCode`. Then we just serialize the opcode as a `u16` with
+[`put_u16`][put-u16]. The `filename` and `mode` we serialize as null-terminated
 strings using a combo of [`put_slice`][put-slice] and [`put_u8`][put-u8].
 
 ```rust
 impl Request {
     pub fn serialize(&self, buffer: &mut BytesMut) {
         let (opcode, payload) = match self {
-            Request::Read(payload) => (OpCode::Rrq, payload),
-            Request::Write(payload) => (OpCode::Wrq, payload),
+            Request::Read(payload) => (RequestOpCode::Rrq, payload),
+            Request::Write(payload) => (RequestOpCode::Wrq, payload),
         };
 
         buffer.put_u16(opcode as u16);
@@ -600,20 +782,20 @@ method is desirable.
 Serializing a `Transfer` packet is more straightforward.
 
 ```rust
-impl<'a> Transfer<'a> {
+impl Transfer<'_> {
     pub fn serialize(&self, buffer: &mut BytesMut) {
         match *self {
             Self::Data { block, data } => {
-                buffer.put_u16(OpCode::Data as u16);
+                buffer.put_u16(TransferOpCode::Data as u16);
                 buffer.put_u16(block);
                 buffer.put_slice(data);
             }
             Self::Ack { block } => {
-                buffer.put_u16(OpCode::Ack as u16);
+                buffer.put_u16(TransferOpCode::Ack as u16);
                 buffer.put_u16(block);
             }
             Self::Error { code, ref message } => {
-                buffer.put_u16(OpCode::Error as u16);
+                buffer.put_u16(TransferOpCode::Error as u16);
                 buffer.put_u16(code.into());
                 buffer.put_slice(message.as_bytes());
                 buffer.put_u8(0x0);
@@ -623,7 +805,7 @@ impl<'a> Transfer<'a> {
 }
 ```
 
-As before, with each variant we serialize a `u16` for the `OpCode` and then do
+As before, with each variant we serialize a `u16` for the `TransferOpCode` and then do
 variant-specific serialization.
 
 - For `Data` we serialize a `u16` for the block number and then the
@@ -754,6 +936,19 @@ efficient and safe.
 [utf-8]: https://en.wikipedia.org/wiki/UTF-8
 [utf-8-history]: https://en.wikipedia.org/wiki/UTF-8#History
 [osstring]: https://doc.rust-lang.org/std/ffi/struct.OsString.html
+[num-derive]: https://crates.io/crates/num-derive
+[from-u16]: https://docs.rs/num-traits/0.2.15/num_traits/cast/trait.FromPrimitive.html#method.from_u16
+[map-opt]: https://docs.rs/nom/7.1.1/nom/combinator/fn.map_opt.html
+[be-u16]: https://docs.rs/nom/7.1.1/nom/number/complete/fn.be_u16.html
+[nom-map]: https://docs.rs/nom/7.1.1/nom/combinator/fn.map.html
+[tag-no-case]: https://docs.rs/nom/7.1.1/nom/bytes/complete/fn.tag_no_case.html
+[into]: https://doc.rust-lang.org/std/convert/trait.Into.html
+[nom-finish]: https://docs.rs/nom/7.1.1/nom/trait.Finish.html#tymethod.finish
+[all-consuming]: https://docs.rs/nom/7.1.1/nom/combinator/fn.all_consuming.html
+[thiserror]: https://crates.io/crates/thiserror
+[dtolnay]: https://github.com/dtolnay
+[error-source]: https://doc.rust-lang.org/std/error/trait.Error.html#method.source
+[static-lifetimes]: https://doc.rust-lang.org/rust-by-example/scope/lifetime/static_lifetime.html
 [put-u16]: https://docs.rs/bytes/1.3.0/bytes/trait.BufMut.html#method.put_u16
 [put-slice]: https://docs.rs/bytes/1.3.0/bytes/trait.BufMut.html#method.put_slice
 [put-u8]: https://docs.rs/bytes/1.3.0/bytes/trait.BufMut.html#method.put_u8
