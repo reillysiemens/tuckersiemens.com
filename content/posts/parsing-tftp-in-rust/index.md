@@ -520,14 +520,12 @@ Let's work inside out to understand what `null_str` is doing.
    results as a tuple.
 
 4. [`map_res`][map-res] applies a function returning a [`Result`][result] over
-   the result of a parser. In this case that means we apply a closure,
-   `|(s, _)| ...`, where the first tuple element comes from our `take_till` and
-   the discarded `_` comes from our `tag`. This essentially gives us a nice way
-   to call a fallible function on the results of earlier parsing.
+   the result of a parser. This gives us a nice way to call a fallible function
+   on the results of earlier parsing, `take_till` and `tag` in this case.
 
-5. [`std::str::from_utf8`][from-utf-8] inside our outermost closure converts
-   our `&[u8]` (now sans zero byte) into a Rust [`&str`][str], which is **not**
-   terminated with a zero byte.
+5. [`std::str::from_utf8`][from-utf-8], the fallible function inside our
+   outermost closure, converts our `&[u8]` (now sans zero byte) into a Rust
+   [`&str`][str], which is **not** terminated with a zero byte.
 
 6. [`IResult<&[u8], &str>`][iresult] ties it all together at the end in
    `null_str`'s return signature returning any unmatched `&[u8]` and a `&str`
@@ -537,7 +535,7 @@ It's important to note that I'm taking another <u><b>huge</b></u> liberty here
 by converting these bytes to a Rust string at all. Rust strings are guaranteed
 to be valid [UTF-8][utf-8]. TFTP [predates UTF-8][utf-8-history], so the
 protocol did not specify that these strings should be Unicode. Later, I might
-prefer an [`OsString`][osstring], but for now non-Unicode strings will cause
+look into an [`OsString`][osstring], but for now non-Unicode strings will cause
 failures.
 
 > Please, only send me UTF-8 strings.<br>
@@ -545,17 +543,95 @@ failures.
 
 #### Request Combinators
 
+> `TODO`
+
 #### Transfer Combinators
+
+> `TODO`
 
 ## Serialization
 
 We can now read bytes into packets, which is handy, but astute readers will
 have noticed that you need to do the reverse if you're going to have a full
-TFTP conversation. I won't leave you hanging.
+TFTP conversation. Luckily, this serialization is (mostly) infallible, so
+there's less to explain.
+
+> `TODO` Talk about why `BufMut`
+
+> `TODO` Talk about potential for panic
+
+### Serializing `Request`
+
+Serializing a `Request` packet is relatively straightfoward. We use a `match`
+expression to pull our `Payload` out of the request and associate with with an
+`OpCode`. Then we just serialize the opcode as a `u16` with
+[`put_u16`][put-u16] The `filename` and `mode` we serialize as null-terminated
+strings using a combo of [`put_slice`][put-slice] and [`put_u8`][put-u8].
 
 ```rust
-TODO
+impl Request {
+    pub fn serialize(&self, buffer: &mut BytesMut) {
+        let (opcode, payload) = match self {
+            Request::Read(payload) => (OpCode::Rrq, payload),
+            Request::Write(payload) => (OpCode::Wrq, payload),
+        };
+
+        buffer.put_u16(opcode as u16);
+        buffer.put_slice(payload.filename.to_string_lossy().as_bytes());
+        buffer.put_u8(0x0);
+        buffer.put_slice(payload.mode.to_string().as_bytes());
+        buffer.put_u8(0x0);
+    }
+}
 ```
+
+Converting our `mode` with [`as_bytes`][as-bytes] through a
+[`to_string`][to-string] is possible thanks to our earlier [`Display`][display]
+impl for `Mode`. The `filename` conversion to bytes through `PathBuf`'s
+[`to_string_lossy`][to-string-lossy] might reasonably raise some eyebrows
+though. Unlike strings a Rust path is not guaranteed to be UTF-8, so any
+non-Unicode characters will be replaced with
+[� (U+FFFD)][replacement-character].
+
+### Serializing `Transfer`
+
+Serializing a `Transfer` packet is even more straightforward.
+
+```rust
+impl<'a> Transfer<'a> {
+    pub fn serialize(&self, buffer: &mut BytesMut) {
+        match *self {
+            Self::Data { block, data } => {
+                buffer.put_u16(OpCode::Data as u16);
+                buffer.put_u16(block);
+                buffer.put_slice(data);
+            }
+            Self::Ack { block } => {
+                buffer.put_u16(OpCode::Ack as u16);
+                buffer.put_u16(block);
+            }
+            Self::Error { code, ref message } => {
+                buffer.put_u16(OpCode::Error as u16);
+                buffer.put_u16(code.into());
+                buffer.put_slice(message.as_bytes());
+                buffer.put_u8(0x0);
+            }
+        }
+    }
+}
+```
+
+As before, with each variant we serialize a `u16` for the `OpCode` and then do
+variant-specific serialization.
+
+- For `Data` we serialize a `u16` for the block number and then the
+  remainder of the data.
+- For `Ack` we also serialize a `u16` block number.
+- For `Error` we use our [`From`][from] impl from earlier to serialize the
+  `ErrorCode` as a `u16` and then serialize the `message` as a null-terminated
+  string.
+
+That's it! Now we can read and write structured data to and from raw bytes! 💪
 
 ## Tests
 
@@ -618,11 +694,15 @@ I also need to thank Yiannis M ([`@oblique`][oblique]) for their work on the
 and learned a great deal.
 
 The source code for the rest of the project is not currently public, but when
-I'm more confident in it I'll definitely share more details.
+I'm more confident in it I'll definitely share more details. Meanwhile, I
+welcome any and all suggestions on how to make what I've written here more
+efficient and safe.
 
 > `TODO` Pin crates to specific links?
 
 > `TODO` Change `#Networking` tag to `#networking`?
+
+> `TODO` Stop highlighting all `enum` references.
 
 [Go]: https://go.dev/
 [TFTP]: https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol
@@ -671,6 +751,14 @@ I'm more confident in it I'll definitely share more details.
 [utf-8]: https://en.wikipedia.org/wiki/UTF-8
 [utf-8-history]: https://en.wikipedia.org/wiki/UTF-8#History
 [osstring]: https://doc.rust-lang.org/std/ffi/struct.OsString.html
+[put-u16]: https://docs.rs/bytes/1.3.0/bytes/trait.BufMut.html#method.put_u16
+[put-slice]: https://docs.rs/bytes/1.3.0/bytes/trait.BufMut.html#method.put_slice
+[put-u8]: https://docs.rs/bytes/1.3.0/bytes/trait.BufMut.html#method.put_u8
+[display]: https://doc.rust-lang.org/std/fmt/trait.Display.html
+[as-bytes]: https://doc.rust-lang.org/std/string/struct.String.html#method.as_bytes
+[to-string]: https://doc.rust-lang.org/std/string/trait.ToString.html#tymethod.to_string
+[to-string-lossy]: https://doc.rust-lang.org/std/path/struct.PathBuf.html#method.to_string_lossy
+[replacement-character]: https://doc.rust-lang.org/std/char/constant.REPLACEMENT_CHARACTER.html
 [Vec]: https://doc.rust-lang.org/std/vec/struct.Vec.html
 [Bytes]: https://docs.rs/bytes/1.3.0/bytes/struct.Bytes.html
 [test-case]: https://crates.io/crates/test-case
