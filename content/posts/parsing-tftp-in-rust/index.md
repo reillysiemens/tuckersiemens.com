@@ -692,7 +692,8 @@ this TFTP code. I could not have written this blog post without her!
 
 I also need to thank Yiannis M ([`@oblique`][oblique]) for their work on the
 [`async-tftp-rs`][async-tftp-rs] crate, from which I have borrowed liberally
-and learned a great deal.
+and learned a great deal. You may recognize some combinators if you dive into
+that code.
 
 The source code for the rest of the project is not currently public, but when
 I'm more confident in it I'll definitely share more details. Meanwhile, I
