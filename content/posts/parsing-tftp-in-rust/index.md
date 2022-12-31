@@ -562,7 +562,7 @@ there's less to explain.
 
 ### Serializing `Request`
 
-Serializing a `Request` packet is relatively straightfoward. We use a `match`
+Serializing a `Request` packet is deceptively straightfoward. We use a `match`
 expression to pull our `Payload` out of the request and associate with with an
 `OpCode`. Then we just serialize the opcode as a `u16` with
 [`put_u16`][put-u16] The `filename` and `mode` we serialize as null-terminated
@@ -588,14 +588,15 @@ impl Request {
 Converting our `mode` with [`as_bytes`][as-bytes] through a
 [`to_string`][to-string] is possible thanks to our earlier [`Display`][display]
 impl for `Mode`. The `filename` conversion to bytes through `PathBuf`'s
-[`to_string_lossy`][to-string-lossy] might reasonably raise some eyebrows
-though. Unlike strings a Rust path is not guaranteed to be UTF-8, so any
-non-Unicode characters will be replaced with
-[� (U+FFFD)][replacement-character].
+[`to_string_lossy`][to-string-lossy] might reasonably raise some eyebrows.
+Unlike strings a Rust path is not guaranteed to be UTF-8, so any non-Unicode
+characters will be replaced with [� (U+FFFD)][replacement-character]. For now,
+given my earlier Unicode decision I'm comfortable with this, but a more robust
+method is desirable.
 
 ### Serializing `Transfer`
 
-Serializing a `Transfer` packet is even more straightforward.
+Serializing a `Transfer` packet is more straightforward.
 
 ```rust
 impl<'a> Transfer<'a> {
@@ -631,7 +632,7 @@ variant-specific serialization.
   `ErrorCode` as a `u16` and then serialize the `message` as a null-terminated
   string.
 
-That's it! Now we can read and write structured data to and from raw bytes! 💪
+That's it! Now we can read and write structured data to and from raw bytes! 🎉
 
 ## Tests
 
