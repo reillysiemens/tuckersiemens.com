@@ -470,12 +470,24 @@ exactly the type we receive off the wire.
 It's finally time to define some combinators and do some parsing! Even if
 you're familiar with Rust, nom combinators might look more like Greek to you.
 I'll explain the first one in depth to show how they work and then explain only
-the more confusing parts as we go along.
+the more confusing parts as we go along. First, a small primer.
+
+nom combinators return [`IResult`][iresult], a custom [`Result`][result] type
+generic over three types instead of the usual two.
+
+```rust
+pub type IResult<I, O, E = Error<I>> = Result<(I, O), Err<E>>;
+```
+
+These types are the input type`I`, the output type `O`,
+and the error type `E` (usually a [nom error][nom-error]). I understand this
+type to mean that `I` will be parsed to produce `O` and any leftover `I` as
+long as no error `E` happens.
 
 #### Null Strings
 
-`null` references are famously a "[billion dollar mistake]", and I can't say I
-like `null` any better in a protocol.
+`null` references are famously a "[billion dollar mistake]" and I can't say I
+like `null` any better in this protocol.
 
 > Like all other strings, it is terminated with a zero byte.<br>
 > &mdash; RFC 1350, smugly
@@ -520,18 +532,6 @@ Let's work inside out to understand what `null_str` is doing.
 6. [`IResult<&[u8], &str>`][iresult] ties it all together at the end in
    `null_str`'s return signature returning any unmatched `&[u8]` and a `&str`
    if successful.
-
-nom combinators return `IResult`, a custom `Result` type generic over three
-types instead of the usual two.
-
-```rust
-pub type IResult<I, O, E = Error<I>> = Result<(I, O), Err<E>>;
-```
-
-These types are the input type`I`, the output type `O`,
-and the error type `E` (usually a [nom error][nom-error]). I understand this
-type to mean that `I` will be parsed to produce `O` and any leftover `I` as
-long as no error `E` happens.
 
 It's important to note that I'm taking another <u><b>huge</b></u> liberty here
 by converting these bytes to a Rust string at all. Rust strings are guaranteed
