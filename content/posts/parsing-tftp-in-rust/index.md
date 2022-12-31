@@ -472,8 +472,8 @@ you're familiar with Rust, nom combinators might look more like Greek to you.
 I'll explain the first one in depth to show how they work and then explain only
 the more confusing parts as we go along. First, a small primer.
 
-nom combinators return [`IResult`][iresult], a custom [`Result`][result] type
-generic over three types instead of the usual two.
+nom combinators return [`IResult`][iresult], a type alias for a
+[`Result`][result] that's generic over three types instead of the usual two.
 
 ```rust
 pub type IResult<I, O, E = Error<I>> = Result<(I, O), Err<E>>;
@@ -482,7 +482,8 @@ pub type IResult<I, O, E = Error<I>> = Result<(I, O), Err<E>>;
 These types are the input type`I`, the output type `O`,
 and the error type `E` (usually a [nom error][nom-error]). I understand this
 type to mean that `I` will be parsed to produce `O` and any leftover `I` as
-long as no error `E` happens.
+long as no error `E` happens. For our purposes `I` is `&[u8]` and we'll have a
+couple different `O` types.
 
 #### Null Strings
 
