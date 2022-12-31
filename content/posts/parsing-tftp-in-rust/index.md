@@ -66,9 +66,6 @@ files can be read by multiple clients concurrently.
 
 ## Protocol Overview
 
-Now that we have a shared understanding of what TFTP is and when to use it,
-let's dive a little deeper into how it works.
-
 TFTP is implemented atop [UDP], which means it can't benefit from the
 retransmission and reliability inherent in [TCP]. Clients and servers must
 maintain their own connections. For this reason operations are carried out in
@@ -87,7 +84,7 @@ additional requests.
 
 ### Reading
 
-To read a file, a client client sends a read request packet. If the request is
+To read a file, a client sends a read request packet. If the request is
 valid, the server responds with the first block of data. The client sends an
 acknowledgement of this block and the server responds with the next block of
 data. The two continue this dance until there's nothing more to read.
@@ -114,13 +111,13 @@ To cover the interactions above, RFC 1350 defines five packet types, each
 starting with a different 2 byte opcode. I'll elaborate on each of them in
 turn.
 
-| Opcode | Operation       | Abbreviation |
-|--------|:----------------|--------------|
-| 1      | Read Request    | `RRQ`        |
-| 2      | Write Request   | `WRQ`        |
-| 3      | Data            | `DATA`       |
-| 4      | Acknowledgement | `ACK`        |
-| 5      | Error           | `ERROR`      |
+| Opcode | Operation                 | Abbreviation |
+|--------|:--------------------------|--------------|
+| 1      | [Read Request](#rrq-wrq)  | `RRQ`        |
+| 2      | [Write Request](#rrq-wrq) | `WRQ`        |
+| 3      | [Data](#data)             | `DATA`       |
+| 4      | [Acknowledgement](#ack)   | `ACK`        |
+| 5      | [Error](#error)           | `ERROR`      |
 
 ### `RRQ` / `WRQ`
 
@@ -145,7 +142,7 @@ And here's a `WRQ` for the same file in the same mode.
 TFTP defines modes of transfer which describe how the bytes being transferred
 should be handled on the other end. There are three default modes.
 
-| mode     | meaning                                                        |
+| Mode     | Meaning                                                        |
 |:---------|:---------------------------------------------------------------|
 | netascii | 8-bit [ASCII]; specifies control characters &amp; line endings |
 | octet    | raw 8-bit bytes; byte-for-byte identical on both ends          |
@@ -219,8 +216,8 @@ own. In practice, maybe don't.
 Now we all know entirely too much about TFTP. Let's write some code already!
 
 Before I start parsing anything I find it helpful to design the resulting
-types. Even in my application code I put on my library developer hat so that I
-won't be annoyed with my own abstractions later on.
+types. Even in application code I put on my library developer hat so I'm not
+annoyed by my own abstractions later.
 
 Let's motivate this design by looking at some code that would use it.
 
@@ -239,7 +236,7 @@ work knows nothing about packets, only raw `&[u8]` (a [slice] of bytes).
 
 So, our task is to turn a `&[u8]` into something else. But what? In other
 implementations I've seen it's common to think of all 5 packet types as
-variations on a theme. We could follow suit, doing the Rusty thing and defining
+variations on a theme. We could follow suit, doing the Rusty thing and define
 an `enum`.
 
 ```rust
@@ -252,8 +249,8 @@ enum Packet {
 }
 ```
 
-This is how I might have liked my Go implemenation to work. If Go even had
-enums! 😒
+I might have liked my Go implemenation to look like this. If Go even had enums!
+😒
 
 This design choice has an unintended consequence though. As mentioned earlier,
 `RRQ` and `WRQ` only really matter on initial request. The remainder of the
@@ -317,7 +314,7 @@ pub enum Request {
 
 ### Transfers
 
-`Request`s take care of `RRQ` and `WRQ` packets, so a `Transfer` `enum` needs
+`Request` takes care of `RRQ` and `WRQ` packets, so a `Transfer` `enum` needs
 to take care of the remaining `DATA`, `ACK`, &amp; `ERROR` packets. Transfers
 are the meat of the protocol and more complex than requests. Let's break down
 each variant.
@@ -326,9 +323,9 @@ each variant.
 
 The `Data` variant needs to contain the `block` number, which is 2 bytes and
 fits neatly into a [`u16`][u16]. It also needs to contain the raw bytes of the
-`data`. There are many ways to represent this, including using a [`Vec<u8>`][Vec] or a
-[`bytes::Bytes`][Bytes]. However, I think the most straightforward is as a
-`&[u8]` even though it introduces a [lifetime].
+`data`. There are many ways to represent this, including using a
+[`Vec<u8>`][Vec] or a [`bytes::Bytes`][Bytes]. However, I think the most
+straightforward is as a `&[u8]` even though it introduces a [lifetime].
 
 #### `Ack`
 
@@ -342,7 +339,7 @@ error codes. I abhor [magic numbers] in my code, so I'll prefer to define anothe
 `enum` called `ErrorCode` for those. For the `message` a `String` should
 suffice.
 
-##### `ErrorCode`s
+##### `ErrorCode`
 
 Defining an `ErrorCode` involves more boilerplate than I'd like, so I'll show
 three variants and leave the remainder as an exercise for the reader.
@@ -357,7 +354,30 @@ pub enum ErrorCode {
 }
 ```
 
-For convenience I also added [`From`][from] implementations. One to convert from an `ErrorCode` to a `u16`.
+The `Undefined` variant is, humorusly, defined, but the `Unknown` variant which
+I've added here is not part of RFC 1350. It merely acts as a catchall for
+remaining error space. Conveniently Rust enums allow variants to contain other
+data.
+
+Because of this `Unknown` variant I didn't opt for a C-style enum like
+
+```rust
+enum ErrorCode {
+    Undefined = 0,
+    FileNotFound = 1,
+    // ...
+}
+```
+
+so we can't cast an `ErrorCode` to a `u16`.
+
+```rust
+// This explodes! 💣💥
+let code = ErrorCode::Unknown(42) as u16;
+```
+
+However, we can add [`From`][from] implementations. One to convert
+from an `ErrorCode` to a `u16`.
 
 ```rust
 impl From<ErrorCode> for u16 {
@@ -388,7 +408,17 @@ impl From<u16> for ErrorCode {
 }
 ```
 
-Put it all together and we arrive at an `enum` that looks like this.
+That way we still have a convenient method for conversions.
+
+```rust
+let code = 42;
+let error = code.into();
+assert_eq!(error, ErrorCode::Unknown(42));
+```
+
+#### Putting It All Together
+
+With each variant considered, we arrive at an `enum` that looks like this.
 
 ```rust
 pub enum Transfer<'a> {
@@ -398,9 +428,13 @@ pub enum Transfer<'a> {
 }
 ```
 
+I could have defined structs to hold the inner data for each variant like I did
+with `Payload` earlier, but because none of the variants had the same shape I
+felt less inclined to do so.
+
 ## Parsing
 
-Now that we have a high-level type design to match our the low-level network
+Now that we have a high-level type design to match the low-level network
 representation we can bridge the two by parsing. There are as many ways to
 shave this [Yacc] as there were enums in our packet types, but I settled on the
 [`nom`][nom] library.
@@ -408,6 +442,7 @@ shave this [Yacc] as there were enums in our packet types, but I settled on the
 ### What Is nom?
 
 > `TODO`
+
 > `TODO` What are parser combinators?
 
 ### Defining Combinators
@@ -415,6 +450,8 @@ shave this [Yacc] as there were enums in our packet types, but I settled on the
 ## Serialization
 
 > `TODO`
+
+## `Ack`nowledgements
 
 [Go]: https://go.dev/
 [TFTP]: https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol
