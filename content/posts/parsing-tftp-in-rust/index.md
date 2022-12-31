@@ -89,7 +89,8 @@ valid, the server responds with the first block of data. The client sends an
 acknowledgement of this block and the server responds with the next block of
 data. The two continue this dance until there's nothing more to read.
 
-<!-- TODO: Consider hosting the SVG's CSS locally for more control. -->
+<!-- TODO: Consider hosting the SVG's CSS locally for more control. Also, this
+     is enormous in desktop browsers, experiment with some scaling... -->
 <img src='rrq.svg' alt='A sequence diagram for a TFTP read request.'>
 
 ### Writing
@@ -99,7 +100,8 @@ request packet and the server responds with an acknowledgement. Then the client
 sends the first block of data and the server responds with another
 acknowledgement. Rinse and repeat until the full file is transferred.
 
-<!-- TODO: Consider hosting the SVG's CSS locally for more control. -->
+<!-- TODO: Consider hosting the SVG's CSS locally for more control. Also, this
+     is enormous in desktop browsers, experiment with some scaling... -->
 <img src='wrq.svg' alt='A sequence diagram for a TFTP write request.'>
 
 ### Errors
@@ -239,7 +241,7 @@ work knows nothing about packets, only raw `&[u8]` (a [slice] of [bytes][u8]).
 So, our task is to turn a `&[u8]` into something else. But what? In other
 implementations I've seen it's common to think of all 5 packet types as
 variations on a theme. We could follow suit, doing the Rusty thing and define
-an `enum`.
+an enum.
 
 ```rust
 enum Packet {
@@ -282,7 +284,7 @@ Before we can talk about a `Request` we should talk about its parts. When we
 talked about packet types we saw that `RRQ` and `WRQ` only differed by opcode
 and the rest of the packet was the same, a `filename` and a `mode`.
 
-A `Mode` is another natural `enum`, but for our purposes we'll only bother with
+A `Mode` is another natural enum, but for our purposes we'll only bother with
 the `Octet` variant for now.
 
 ```rust
@@ -305,7 +307,7 @@ pub struct Payload {
 }
 ```
 
-Now we can define a `Request` as an `enum` where each variant has a `Payload`.
+Now we can define a `Request` as an enum where each variant has a `Payload`.
 
 ```rust
 pub enum Request {
@@ -316,7 +318,7 @@ pub enum Request {
 
 ### Transfers
 
-`Request` takes care of `RRQ` and `WRQ` packets, so a `Transfer` `enum` needs
+`Request` takes care of `RRQ` and `WRQ` packets, so a `Transfer` enum needs
 to take care of the remaining `DATA`, `ACK`, &amp; `ERROR` packets. Transfers
 are the meat of the protocol and more complex than requests. Let's break down
 each variant.
@@ -338,7 +340,7 @@ solitary `u16` for that.
 
 The `Error` variant warrants more consideration because of the well-defined
 [error codes](#error). I abhor [magic numbers] in my code, so I'll prefer to
-define another `enum` called `ErrorCode` for those. For the `message` a
+define another enum called `ErrorCode` for those. For the `message` a
 `String` should suffice.
 
 ##### `ErrorCode`
@@ -715,7 +717,7 @@ fn error(input: &[u8]) -> IResult<&[u8], Error> {
 ```
 
 When we put it all these combinators together in a `transfer` function it looks
-more complex than our earlier `request` function, but that's only because there
+more complex than our earlier `request` function. That's only because there
 are more variants and my choice to use anonymous struct variants instead of
 tuple structs means there's no easy constructor, so we map over a closure.
 Otherwise the idea is the same as before.
@@ -767,7 +769,7 @@ if I pass a `&mut [u8]` and forget to size it appropriately.
 ### Serializing `Request`
 
 Serializing a `Request` packet is deceptively straightfoward. We use a `match`
-expression to pull our `Payload` out of the request and associate with with an
+expression to pull our `Payload` out of the request and associate with a
 `RequestOpCode`. Then we just serialize the opcode as a `u16` with
 [`put_u16`][put-u16]. The `filename` and `mode` we serialize as null-terminated
 strings using a combo of [`put_slice`][put-slice] and [`put_u8`][put-u8].
@@ -905,8 +907,6 @@ welcome any and all suggestions on how to make what I've written here more
 efficient and safe.
 
 > `TODO` Change `#Networking` tag to `#networking`?
-
-> `TODO` Stop highlighting all `enum` references.
 
 <!-- TODO: Pin crates.io links to specific versions? -->
 
