@@ -236,7 +236,8 @@ todo!("Get our packet out of data!");
 
 In both [`std::net::UdpSocket`][std-udpsocket] and
 [`tokio::net::UdpSocket`][tokio-udpsocket] the interface that we have to
-work knows nothing about packets, only raw `&[u8]` (a [slice] of [bytes][u8]).
+work with knows nothing about packets, only raw `&[u8]` (a [slice] of
+[bytes][u8]).
 
 So, our task is to turn a `&[u8]` into something else. But what? In other
 implementations I've seen it's common to think of all 5 packet types as
@@ -292,6 +293,19 @@ pub enum Mode {
     // Netascii, for completeness.
     Octet,
     // Mail, if only to gracefully send an ERROR.
+}
+```
+
+As an added convenience later on we'll add a [`Display`][display] impl for
+`Mode` so we can convert it to a string.
+
+```rust
+impl Display for Mode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Octet => write!(f, "octet"),
+        }
+    }
 }
 ```
 
