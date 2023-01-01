@@ -909,6 +909,9 @@ I also need to thank Yiannis M ([`@oblique`][oblique]) for their work on the
 and learned a great deal. You may recognize some combinators if you dive into
 that code.
 
+Finally, I can't thank my wife enough helping me edit this. There are many
+fewer mistakes as a result.
+
 The source code for the rest of the project is not currently public, but when
 I'm more confident in it I'll definitely share more details. Meanwhile, I
 welcome any and all suggestions on how to make what I've written here more
