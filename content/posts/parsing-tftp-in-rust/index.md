@@ -372,9 +372,9 @@ pub enum ErrorCode {
 }
 ```
 
-The `Undefined` variant is, humorusly, defined, but the `Unknown` variant which
-I've added here is not part of RFC 1350. It merely acts as a catchall for
-remaining error space. Conveniently Rust enums allow variants to contain other
+The `Undefined` variant is, humorously, defined, but the `Unknown` variant I've
+added here is not part of RFC 1350. It merely acts as a catch-all for the
+remaining error space. Conveniently, Rust enums allow variants to contain other
 data.
 
 Because of this `Unknown` variant I didn't opt for a C-style enum like
@@ -559,7 +559,7 @@ failures.
 Since `Request` only concerns itself with the first two packet types, `RRQ` and
 `WRQ` we can start parsing by matching only those opcodes. For convenience I
 used the [`num-derive`][num-derive] crate to create a `RequestOpCode` enum so I
-could use [`num_traits::cast::FromPrimitive::from_u16`][from-u16].
+could use [`FromPrimitive::from_u16`][from-u16].
 
 The `request_opcode` combinator uses [`map_opt`][map-opt] and
 [`be_u16`][be-u16] combinators to parse a `u16` out of the `input` and pass it
