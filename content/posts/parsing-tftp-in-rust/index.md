@@ -521,7 +521,7 @@ Mercifully, the nom toolkit has everything we need to slay this beast.
 
 Let's work inside out to understand what `null_str` is doing.
 
-1. [`take_till`][take-till] accepts function (here we use a closure with `b`
+1. [`take_till`][take-till] accepts a function (here we use a closure with `b`
    for each byte) and collects up bytes from the `input` until one of
    the bytes matches the null byte, `b'\x00'`. This gets us a `&[u8]` up until,
    _but not including_, our zero byte.
