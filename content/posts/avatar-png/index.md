@@ -14,9 +14,10 @@ intro paragraph.`
 
 <!-- more -->
 
-`TODO: Place image immediately after the summary.`
-
-<!-- TODO: Fix width and height. <img src="avatar.png" height="256" width="256" alt="TODO"> -->
+`TODO: Fix image container. Figcaption?`
+<div style="display: flex; align-items: center; justify-content: center;">
+  <img style="height: 256px; width:256px;" src="avatar.png" height="256" width="256" alt="TODO">
+</div>
 
 These files are web applications that generate PNGs on request containing a
 friendly greeting with the IP address of the requester.
@@ -246,7 +247,7 @@ $ curl http://localhost:3000/
 Hello, 127.0.0.1!
 ```
 
-## Making a PNG
+## Creating a PNG
 
 Unfortunately, the assignment wasn't to return the client's IP address in
 plaintext. For parity with the PHP we need to serve an image. Fortunately, the
@@ -256,17 +257,19 @@ plaintext. For parity with the PHP we need to serve an image. Fortunately, the
 $ cargo add image@0.24.7
 ```
 
-### Our Canvas
+``TODO: Note the admirable use of generics in the `image` types.``
 
-The image crate allows us to create a PNG in a fashion very similar to the PHP.
-The analog of `@imagecreate` is to create an [`ImageBuffer`][image_buffer].
-Instead of `imagecolorallocate`, the `ImageBuffer` struct has a convenient
+### Background
+
+The image crate allows us to create a PNG in a fashion similar to the PHP. The
+analog of `@imagecreate` is to create an [`ImageBuffer`][image_buffer]. Instead
+of `imagecolorallocate`, the `ImageBuffer` struct has a convenient
 [`from_pixel`][image_buffer_from_pixel] method which allows us to specify a
 starting pixel that is then copied across our new canvas. We can start with a
 single [`Rgb`][image_rgb] pixel.
 
 ```rust
-use image::{ImageBuffer, Rgb, RgbImage};
+use image::{ImageBuffer, Rgb};
 
 const WIDTH: u32 = 256;
 const HEIGHT: u32 = WIDTH;
@@ -275,10 +278,69 @@ const BACKGROUND_COLOR: Rgb<u8> = Rgb([119, 33, 111]);
 
 // ...
 
-let img: RgbImage = ImageBuffer::from_pixel(WIDTH, HEIGHT, BACKGROUND_COLOR);
+let img = ImageBuffer::from_pixel(WIDTH, HEIGHT, BACKGROUND_COLOR);
 ```
 
-`TODO: Note the admirable use of generics in these types.`
+### File Format
+
+The resulting image buffer is not yet an image though. It's pretty much still a
+multi-dimensional array of integers. To construct a PNG someone can actually
+see we need to jam those integers into the [PNG file format]. Sadly for us, the
+equivalent of PHP's `imagepng` is nowhere near as convenient.
+
+If you use `ImageBuffer`'s [`save`][image_buffer_save] method to write the
+buffer out as a file
+
+```rust
+img.save("avatar.png").unwrap();
+```
+
+you'll get a blank canvas like this.
+
+`TODO: Fix image container. Figcaption?`
+<div style="display: flex; align-items: center; justify-content: center;">
+  <img style="height: 256px; width:256px;" src="blank-canvas.png" height="256" width="256" alt="TODO: Add blank canvas PNG">
+</div>
+
+Sure enough, that's a PNG, but using `save` is disastrous to us for a few
+reasons.
+
+- The image is written to the filesystem. To serve its contents to the client
+   we'd have to read it from disk _again_, which is **SLOW**.
+
+-  Even if it wasn't slow we'd have concurrency issues. Clients could encounter
+   half-written images or incorrect IP addresses from other clients.
+
+- Even if the above weren't issues, the `save` method is written to assume
+   synchronous I/O and Axum is an asynchronous web framework. We'd need to
+   spawn a background task to keep it from blocking others.
+
+Instead, `ImageBuffer` has a [`write_to`][image_buffer_write_to] method which
+> [w]rites the buffer to a writer in the specified format.
+
+In this case a "writer" is some type, `W`, which implements the
+[`Write`][write] and [`Seek`][seek] traits. Rust's standard library gives us
+such a `W` in the form of [`std::io::Cursor<T>`][cursor]. We can use a
+[`Vec<u8>`][vec] for our cursor's buffer type, `T`.
+
+```rust
+let mut cursor = Cursor::new(vec![]);
+```
+
+As for the "specified format", `save` has some logic to infer output format
+from file extension, but with `write_to` we can just pass
+[`ImageOutputFormat::Png`][image_output_format_png].
+
+```rust
+img.write_to(&mut cursor, ImageOutputFormat::Png).unwrap();
+```
+
+The `Vec<u8>` wrapped by our cursor now contains all the bytes for a proper
+PNG image.
+
+### Serving the Image
+
+`TODO: Write up how to serve the image.`
 
 ### Adding Text
 
@@ -290,6 +352,8 @@ time?``
 `TODO: Talk about newlines?`
 
 `TODO: What is the licensing for the font? Can I even use it? https://launchpad.net/ubuntu-font-licence https://bazaar.launchpad.net/~ufl-contributors/ubuntu-font-licence/trunk/view/head:/ubuntu-font-licence-1.0.txt`
+
+`TODO: Should I use the same font as the code for this blog?`
 
 ## How Can We Make It Better?
 
@@ -305,6 +369,10 @@ time?``
 ### Benchmarking?
 
 ### HTTP 2?
+
+### HTTP `HEAD` Support?
+
+`TODO: How should that be handled?`
 
 [server]: https://www.php.net/manual/en/reserved.variables.server.php
 [explode]: https://www.php.net/manual/en/function.explode.php
@@ -344,3 +412,11 @@ time?``
 [image_buffer]: https://docs.rs/image/0.24.7/image/struct.ImageBuffer.html
 [image_buffer_from_pixel]: https://docs.rs/image/0.24.7/image/struct.ImageBuffer.html#method.from_pixel
 [image_rgb]: https://docs.rs/image/0.24.7/image/struct.Rgb.html
+[PNG file format]: https://en.wikipedia.org/wiki/PNG#File_format
+[image_buffer_save]: https://docs.rs/image/0.24.7/image/struct.ImageBuffer.html#method.save
+[image_buffer_write_to]: https://docs.rs/image/0.24.7/image/struct.ImageBuffer.html#method.write_to
+[write]: https://doc.rust-lang.org/std/io/trait.Write.html
+[seek]: https://doc.rust-lang.org/std/io/trait.Seek.html
+[cursor]: https://doc.rust-lang.org/std/io/struct.Cursor.html
+[image_output_format_png]: https://docs.rs/image/0.24.7/image/enum.ImageOutputFormat.html#variant.Png
+[vec]: https://doc.rust-lang.org/std/vec/struct.Vec.html
