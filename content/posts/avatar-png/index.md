@@ -4,8 +4,10 @@ description = "TODO"
 url = "posts/avatar.png"
 date = 2023-10-12T00:00:00-08:00
 [taxonomies]
-tags = ["webdev", "PNG"]
+tags = ["Rust", "PHP", "webdev", "PNG"]
 +++
+
+No, not that Avatar. And not the other one either.
 
 `TODO: Is this even a good title?`
 
@@ -120,9 +122,11 @@ too.
 
 First, we create a new Rust project and add our dependencies.
 
+`TODO: Upgrade Axum to 0.7.2`
+
 ```bash
 $ cargo new avatar && cd avatar
-$ cargo add axum@0.6.20
+$ cargo add axum@0.7.1
 $ cargo add tokio@1.34.0 --features=rt-multi-thread,macros
 ```
 
@@ -136,10 +140,8 @@ use axum::{routing::get, Router};
 async fn main() {
     let app = Router::new().route("/", get(|| async { "Hello, World!" }));
 
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 ```
 
@@ -164,10 +166,8 @@ async fn main() {
         }),
     );
 
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
-        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
-        .await
-        .unwrap();
+    let make_service = app.into_make_service_with_connect_info::<SocketAddr>();
+    axum::serve(listener, make_service).await.unwrap();
 }
 ```
 
@@ -273,8 +273,7 @@ use image::{ImageBuffer, Rgb};
 
 const WIDTH: u32 = 256;
 const HEIGHT: u32 = WIDTH;
-// TODO: Swap these out for blog colors.
-const BACKGROUND_COLOR: Rgb<u8> = Rgb([119, 33, 111]);
+const BACKGROUND_COLOR: Rgb<u8> = Rgb([177, 98, 134]);
 
 // ...
 
@@ -306,14 +305,14 @@ Sure enough, that's a PNG, but using `save` is disastrous to us for a few
 reasons.
 
 - The image is written to the filesystem. To serve its contents to the client
-   we'd have to read it from disk _again_, which is **SLOW**.
+   we'd have to read it from disk, which is **SLOW**.
 
 -  Even if it wasn't slow we'd have concurrency issues. Clients could encounter
    half-written images or incorrect IP addresses from other clients.
 
 - Even if the above weren't issues, the `save` method is written to assume
    synchronous I/O and Axum is an asynchronous web framework. We'd need to
-   spawn a background task to keep it from blocking others.
+   spawn a [background task][spawn_blocking] to keep it from blocking others.
 
 Instead, `ImageBuffer` has a [`write_to`][image_buffer_write_to] method which
 > [w]rites the buffer to a writer in the specified format.
@@ -336,26 +335,154 @@ img.write_to(&mut cursor, ImageOutputFormat::Png).unwrap();
 ```
 
 The `Vec<u8>` wrapped by our cursor now contains all the bytes for a proper
-PNG image.
+(albeit blank) PNG. We can work with that `Vec<u8>` directly by consuming the
+cursor with [`into_inner`][cursor_into_inner].
 
 ### Serving the Image
 
-`TODO: Write up how to serve the image.`
+At this point we need to tell Axum how to serve the image we've created. How do
+we turn a `Vec<u8>` into a response that a client will understand as an image?
+
+Axum knows how to serve `Vec<u8>` out of the box, but if we change the
+handler's signature to return just that we'll have undesired behavior.
+
+```rust
+async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Vec<u8> {
+    // ..
+    cursor.into_inner()
+}
+```
+
+Check that with `curl` and you'll see a response like
+
+```bash
+$ curl --head http://localhost:3000/
+HTTP/1.1 200 OK
+content-type: application/octet-stream
+content-length: 1726
+date: Thu, 28 Dec 2023 02:30:17 GMT
+```
+
+Note that the `Content-Type` header is
+[`application/octet-stream`][application_octet_stream] and **not**
+[`image/png`][image_png]. We need analogs for PHP's `header` and `imagepng` in
+order to tell the client the response is a PNG.
+
+We could build an appropriate [`Response`][http_response] ourselves, but the
+magic of Axum's [`IntoResponse`][axum_into_response] trait provides a clear,
+terse syntax for this that I find preferable.
+
+```rust
+async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
+    // ...
+    ([(header::CONTENT_TYPE, "image/png")], cursor.into_inner())
+}
+```
+
+We return a tuple with an array mapping header names to values and the bytes
+for the body. Axum's [blanket implementations] for `IntoResponse` do all the
+work to figure out how to turn that into an HTTP response.
+
+Putting it all together our current handler looks like this.
+
+```rust
+async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
+    let _text = format!("Hello, {}", addr.ip());
+    let img = ImageBuffer::from_pixel(WIDTH, HEIGHT, BACKGROUND_COLOR);
+
+    let mut cursor = Cursor::new(vec![]);
+    img.write_to(&mut cursor, ImageOutputFormat::Png).unwrap();
+
+    ([(header::CONTENT_TYPE, "image/png")], cursor.into_inner())
+}
+```
+
+The `_text` is notably being ignored right now. We can get IP addresses, we
+can create PNGs, and we can serve them. Now what remains is to put the text in
+the image.
 
 ### Adding Text
 
-``TODO: How does this work with fonts? Can we at least not load the `.ttf` font each
-time?``
+For the Rust analog of PHP's `imagettftext` we need a way to draw text on our
+image. The `image` crate doesn't provide any routines for manipulating text,
+but it does recommend the [`imageproc`][imageproc] crate, which is maintained
+by the same organization.
 
-``TODO: Talk about `Scale`, font size, pixels, and [point].``
+```bash
+$ cargo add imageproc@0.23.0
+```
 
-`TODO: Talk about newlines?`
+This crate provides a [`draw_text_mut`][draw_text_mut] function, which will
+draw text onto an existing image. From its signature we can gather it needs a
+whopping 7 arguments (PHP's `imagettftext` is 8, so maybe I shouldn't
+complain). Naturally, these aren't really documented, but we can learn a lot
+from Rust signatures alone.
 
-`TODO: What is the licensing for the font? Can I even use it? https://launchpad.net/ubuntu-font-licence https://bazaar.launchpad.net/~ufl-contributors/ubuntu-font-licence/trunk/view/head:/ubuntu-font-licence-1.0.txt`
+- `canvas` &mdash; Any type that implements `imageproc`'s
+  [`Canvas`][imageproc_drawing_canvas] trait.
+- `color` &mdash; Any [`Pixel`][image_pixel] which can be drawn on that
+  `canvas`.
+- `x` &mdash; The x-coordinate at which to start drawing the text.
+- `y` &mdash; The y-coordinate at which to start drawing the text.
+- `scale` &mdash; The [`Scale`][rusttype_scale] of the font face used when
+  drawing the text.
+- `font` &mdash; The [`Font`][rusttype_font] the text should be drawn in.
+- `text` &mdash; The text itself.
+
+That feels like a lot, but we already have most of what we need. Luckily our
+existing `ImageBuffer` satisfies the `Canvas` trait and we already know it's
+using `Rgb` pixels which satisfy the `Pixel` trait. The `x` and `y` coordinates
+were given in the original PHP and we already have our `_text`. We only need a
+`Scale` and a `Font`. To work with both we'll need the [`rusttype`][rusttype]
+crate.
+
+```bash
+$ cargo add rusttype@0.9.3
+```
+
+#### Getting a Font
 
 `TODO: Should I use the same font as the code for this blog?`
 
+In PHP-land with `imagettftext` we just specified the path to a [TrueType] font
+file (`UbuntuMono-Regular.ttf`) and went on our merry way. Our Rust libraries
+want us to create a `Font`, which requires us to load the contents of that
+font file into our application.
+
+We could do this on every request, which is what the PHP actually does. Or, we
+could do one better and bake the font directly into our application with Rust's
+[`include_bytes!`][include_bytes] macro. I threw in the [`concat!`][concat] and
+[`env!`][env] macros as well for completeness.
+
+```rust
+const FONT_DATA: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/fonts/UbuntuMono-R.ttf"
+));
+
+// ...
+
+let font = Font::try_from_bytes(FONT_DATA).unwrap();
+```
+
+#### Setting a Scale
+
+``TODO: Talk about `Scale`, font size, pixels, and [point].``
+
+`TODO: What is the licensing for the font? Can I even use it? https://launchpad.net/ubuntu-font-licence https://bazaar.launchpad.net/~ufl-contributors/ubuntu-font-licence/trunk/view/head:/ubuntu-font-licence-1.0.txt`
+
+`TODO: Fix image container. Figcaption?`
+<div style="display: flex; align-items: center; justify-content: center;">
+  <img style="height: 256px; width:256px;" src="draw-text.png" height="256" width="256" alt="TODO: Draw text on PNG">
+</div>
+
+#### Handling Newlines
+
+`TODO: Talk about handling newlines.`
+
 ## How Can We Make It Better?
+
+### Creating One Font
 
 ### Error Handling
 
@@ -366,13 +493,11 @@ time?``
 - Turns out SVG is hard and possibly not much better?
 - Newline support is not much more clear. `tspan` vs. `textArea` (not supported)
 
+### Topics I would like to have gotten to, but didn't have time for
+
 ### Benchmarking?
 
 ### HTTP 2?
-
-### HTTP `HEAD` Support?
-
-`TODO: How should that be handled?`
 
 [server]: https://www.php.net/manual/en/reserved.variables.server.php
 [explode]: https://www.php.net/manual/en/function.explode.php
@@ -396,13 +521,13 @@ time?``
 [Rocket]: https://rocket.rs/
 [hello_world]: https://en.wikipedia.org/wiki/%22Hello,_World!%22_program
 [automagically]: https://en.wiktionary.org/wiki/automagical
-[handler]: https://docs.rs/axum/0.6.20/axum/index.html#handlers
+[handler]: https://docs.rs/axum/0.7.1/axum/index.html#handlers
 [closure]: https://doc.rust-lang.org/book/ch13-01-closures.html
-[axum_routing_get]: https://docs.rs/axum/0.6.20/axum/routing/method_routing/fn.get.html
-[extractor]: https://docs.rs/axum/0.6.20/axum/index.html#extractors
-[axum_extract_connectinfo]: https://docs.rs/axum/0.6.20/axum/extract/struct.ConnectInfo.html
+[axum_routing_get]: https://docs.rs/axum/0.7.1/axum/routing/method_routing/fn.get.html
+[extractor]: https://docs.rs/axum/0.7.1/axum/index.html#extractors
+[axum_extract_connectinfo]: https://docs.rs/axum/0.7.1/axum/extract/struct.ConnectInfo.html
 [socket_addr]: https://doc.rust-lang.org/std/net/enum.SocketAddr.html
-[into_make_service_with_connect_info]: https://docs.rs/axum/0.6.20/axum/struct.Router.html#method.into_make_service_with_connect_info
+[into_make_service_with_connect_info]: https://docs.rs/axum/0.7.1/axum/struct.Router.html#method.into_make_service_with_connect_info
 [move]: https://doc.rust-lang.org/std/keyword.move.html
 [async_block]: https://doc.rust-lang.org/reference/expressions/block-expr.html#async-blocks
 [borrowing and ownership]: https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html
@@ -414,9 +539,28 @@ time?``
 [image_rgb]: https://docs.rs/image/0.24.7/image/struct.Rgb.html
 [PNG file format]: https://en.wikipedia.org/wiki/PNG#File_format
 [image_buffer_save]: https://docs.rs/image/0.24.7/image/struct.ImageBuffer.html#method.save
+[spawn_blocking]: https://docs.rs/tokio/1.34.0/tokio/task/fn.spawn_blocking.html
 [image_buffer_write_to]: https://docs.rs/image/0.24.7/image/struct.ImageBuffer.html#method.write_to
 [write]: https://doc.rust-lang.org/std/io/trait.Write.html
 [seek]: https://doc.rust-lang.org/std/io/trait.Seek.html
 [cursor]: https://doc.rust-lang.org/std/io/struct.Cursor.html
 [image_output_format_png]: https://docs.rs/image/0.24.7/image/enum.ImageOutputFormat.html#variant.Png
 [vec]: https://doc.rust-lang.org/std/vec/struct.Vec.html
+[cursor_into_inner]: https://doc.rust-lang.org/std/io/struct.Cursor.html#method.into_inner
+[application_octet_stream]: https://www.iana.org/assignments/media-types/application/octet-stream
+[image_png]: https://www.iana.org/assignments/media-types/image/png
+[http_response]: https://docs.rs/http/1.0.0/http/response/struct.Response.html
+[axum_into_response]: https://docs.rs/axum/0.7.1/axum/response/trait.IntoResponse.html
+[blanket implementations]: https://users.rust-lang.org/t/what-are-blanket-implementations/49904
+
+[imageproc]: https://docs.rs/imageproc/0.23.0/imageproc/index.html
+[draw_text_mut]: https://docs.rs/imageproc/0.23.0/imageproc/drawing/fn.draw_text_mut.html
+[imageproc_drawing_canvas]: https://docs.rs/imageproc/0.23.0/imageproc/drawing/trait.Canvas.html
+[image_pixel]: https://docs.rs/image/0.24.7/image/trait.Pixel.html
+[rusttype_scale]: https://docs.rs/rusttype/0.9.3/rusttype/struct.Scale.html
+[rusttype_font]: https://docs.rs/rusttype/0.9.3/rusttype/enum.Font.html
+[TrueType]: https://en.wikipedia.org/wiki/TrueType
+[rusttype]: https://docs.rs/rusttype/0.9.3/rusttype/index.html
+[include_bytes]: https://doc.rust-lang.org/std/macro.include_bytes.html
+[concat]: https://doc.rust-lang.org/std/macro.concat.html
+[env]: https://doc.rust-lang.org/std/macro.env.html
