@@ -2,7 +2,7 @@
 title = "avatar.png"
 description = "TODO"
 url = "posts/avatar.png"
-date = 2023-10-12T00:00:00-08:00
+date = 2023-12-30T00:00:00-08:00
 [taxonomies]
 tags = ["Rust", "PHP", "webdev", "PNG"]
 +++
@@ -229,7 +229,7 @@ The other way to get around this is to make our handler a function instead of a
 closure.
 
 ```rust
-async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> String {
+async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> String {
     format!("Hello, {}", addr.ip())
 }
 ```
@@ -237,13 +237,14 @@ async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> String {
 This also makes our app declaration prettier, so let's go with that.
 
 ```rust
-let app = Router::new().route("/", get(root));
+let app = Router::new().route("/avatar.png", get(avatar));
 ```
 
-We can verify this works as intended with `curl`.
+Notice that we also changed the route to `/avatar.png` to match how the PHP
+was served. We can verify this works as intended with `curl`.
 
 ```bash
-$ curl http://localhost:3000/
+$ curl http://localhost:3000/avatar.png
 Hello, 127.0.0.1!
 ```
 
@@ -347,7 +348,7 @@ Axum knows how to serve `Vec<u8>` out of the box, but if we change the
 handler's signature to return just that we'll have undesired behavior.
 
 ```rust
-async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Vec<u8> {
+async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Vec<u8> {
     // ..
     cursor.into_inner()
 }
@@ -356,7 +357,7 @@ async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Vec<u8> {
 Check that with `curl` and you'll see a response like
 
 ```bash
-$ curl --head http://localhost:3000/
+$ curl --head http://localhost:3000/avatar.png
 HTTP/1.1 200 OK
 content-type: application/octet-stream
 content-length: 1726
@@ -373,7 +374,7 @@ magic of Axum's [`IntoResponse`][axum_into_response] trait provides a clear,
 terse syntax for this that I find preferable.
 
 ```rust
-async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
+async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
     // ...
     ([(header::CONTENT_TYPE, "image/png")], cursor.into_inner())
 }
@@ -386,7 +387,7 @@ work to figure out how to turn that into an HTTP response.
 Putting it all together our current handler looks like this.
 
 ```rust
-async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
+async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
     let _text = format!("Hello, {}", addr.ip());
     let img = ImageBuffer::from_pixel(WIDTH, HEIGHT, BACKGROUND_COLOR);
 
@@ -502,7 +503,7 @@ const FONT_DATA: &[u8] = include_bytes!(concat!(
     "/fonts/UbuntuMono-R.ttf"
 ));
 
-async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
+async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
     let text = format!("Hello,\n{}", addr.ip());
     let img = ImageBuffer::from_pixel(WIDTH, HEIGHT, BACKGROUND_COLOR);
     draw_text_mut(&mut img, TEXT_COLOR, X, Y, SCALE, &FONT, &text);
@@ -568,24 +569,34 @@ something like this.
   <img style="height: 256px; width:256px;" src="with-newline.png" height="256" width="256" alt="TODO: Draw text on PNG">
 </div>
 
-## How Can We Make It Better?
+## Room for Improvement
 
-### Creating One Font
+In no particular order here's a grab bag of potential improvements. I've made
+some of them and saved others for another day.
+
+### Using One `Font`
+
+Earlier I mentioned that our `Font` couldn't be `const`. That's true, but with
+a little effort it can at least be `static`. I don't always love globals, but
+it feels silly to create a new `Font` on each request when it could be the same
+darn font every time.
 
 ### Error Handling
-
-### IPv6 Support
 
 ### SVG
 
 - Turns out SVG is hard and possibly not much better?
 - Newline support is not much more clear. `tspan` vs. `textArea` (not supported)
 
-### Topics I would like to have gotten to, but didn't have time for
+#### Benefits
 
-### Benchmarking?
+#### Downsides
 
-### HTTP 2?
+### IPv6 Support
+
+#### Allowing IPv6 Connections
+
+#### Displaying the IP Correctly
 
 [server]: https://www.php.net/manual/en/reserved.variables.server.php
 [explode]: https://www.php.net/manual/en/function.explode.php
