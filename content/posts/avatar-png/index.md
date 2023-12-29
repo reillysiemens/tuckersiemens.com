@@ -444,6 +444,8 @@ $ cargo add rusttype@0.9.3
 
 `TODO: Should I use the same font as the code for this blog?`
 
+`TODO: What is the licensing for the font? Can I even use it? https://launchpad.net/ubuntu-font-licence https://bazaar.launchpad.net/~ufl-contributors/ubuntu-font-licence/trunk/view/head:/ubuntu-font-licence-1.0.txt`
+
 In PHP-land with `imagettftext` we just specified the path to a [TrueType] font
 file (`UbuntuMono-Regular.ttf`) and went on our merry way. Our Rust libraries
 want us to create a `Font`, which requires us to load the contents of that
@@ -465,20 +467,106 @@ const FONT_DATA: &[u8] = include_bytes!(concat!(
 let font = Font::try_from_bytes(FONT_DATA).unwrap();
 ```
 
+Unfortunately, while the `FONT_DATA` can be [`const`][const] the `Font` itself
+can't, but we can work with this for now.
+
 #### Setting a Scale
 
-``TODO: Talk about `Scale`, font size, pixels, and [point].``
+The last piece of information we need to draw text is a font `Scale`. According
+to the docs the scale is defined in [pixels][pixel]. However, PHP's
+`imagettftext` specifies a size in [points][point]. The difference between
+pixels and points is a [tricky business][points_vs_pixels], but for our
+purposes we can take the _Easy Mode_ ™ route by assuming that a point is
+defined at a 3:4 ratio to a pixel. Thus, from the original font size of `24` we
+arrive at a scale of `32`.
 
-`TODO: What is the licensing for the font? Can I even use it? https://launchpad.net/ubuntu-font-licence https://bazaar.launchpad.net/~ufl-contributors/ubuntu-font-licence/trunk/view/head:/ubuntu-font-licence-1.0.txt`
+```rust
+const SCALE: Scale = Scale { x: 32.0, y: 32.0 };
+```
+
+#### Putting It All Together
+
+With `Font`, `Scale`, and all our other arguments in hand we can finally draw
+text on the image.
+
+```rust
+const X: i32 = 8;
+const Y: i32 = 96;
+const WIDTH: u32 = 256;
+const HEIGHT: u32 = WIDTH;
+const TEXT_COLOR: Rgb<u8> = Rgb([235, 219, 178]);
+const BACKGROUND_COLOR: Rgb<u8> = Rgb([177, 98, 134]);
+const SCALE: Scale = Scale { x: 32.0, y: 32.0 };
+const FONT_DATA: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/fonts/UbuntuMono-R.ttf"
+));
+
+async fn root(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
+    let text = format!("Hello,\n{}", addr.ip());
+    let img = ImageBuffer::from_pixel(WIDTH, HEIGHT, BACKGROUND_COLOR);
+    draw_text_mut(&mut img, TEXT_COLOR, X, Y, SCALE, &FONT, &text);
+
+    let mut cursor = Cursor::new(vec![]);
+    img.write_to(&mut cursor, ImageOutputFormat::Png).unwrap();
+
+    ([(header::CONTENT_TYPE, "image/png")], cursor.into_inner())
+}
+```
+
+That handler will get us an image that looks something like this.
 
 `TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="draw-text.png" height="256" width="256" alt="TODO: Draw text on PNG">
+  <img style="height: 256px; width:256px;" src="no-newline.png" height="256" width="256" alt="TODO: Add blank canvas PNG">
 </div>
+
+Which... doesn't really look right, does it? What the heck is the `□` and why
+is the IP address cut off instead of being on a [new line][newline]?
 
 #### Handling Newlines
 
-`TODO: Talk about handling newlines.`
+We find the answer, as we often do, by reading more closely. `draw_text_mut`'s
+docs clearly say
+
+> Note that this function _does not_ support newlines, you must do this
+> manually.
+
+That also offers an explanation for what the `□` is. By digging into the
+`imageproc` source we can see that it ultimately calls
+[`Font::glyph`][font_glyph], which says
+
+> Note that code points without corresponding glyphs in this font map to the
+> “.notdef” glyph, glyph 0.
+
+Since the newline character `\n` is a [control character][control_character]
+it's not in the font itself and thus we get the [.notdef][notdef] glyph
+instead. This also explains why the `rusttype` crate (and by extension
+`imageproc`) don't support newlines.
+
+So how can we "do this manually"? Neither `imageproc` nor `rusttype` offer any
+specific advice. The easiest approach seems to be to just split the text up
+ourselves and draw what goes on the next line with a new `y` offset.
+
+```rust
+    let ip = addr.ip();
+
+    // ..
+
+    draw_text_mut(&mut img, TEXT_COLOR, X, Y, SCALE, &FONT, "Hello,");
+    let y = Y + SCALE.y as i32;
+    draw_text_mut(&mut img, TEXT_COLOR, X, y, SCALE, &FONT, &format!("{ip}!"));
+```
+
+I chose to just add `SCALE.y` to the original `Y`, which is playing fast and
+loose with concepts like [line height][leading], but seems to work out well
+enough. At last, we can reproduce the original PHP with output that looks
+something like this.
+
+`TODO: Fix image container. Figcaption?`
+<div style="display: flex; align-items: center; justify-content: center;">
+  <img style="height: 256px; width:256px;" src="with-newline.png" height="256" width="256" alt="TODO: Draw text on PNG">
+</div>
 
 ## How Can We Make It Better?
 
@@ -564,3 +652,12 @@ let font = Font::try_from_bytes(FONT_DATA).unwrap();
 [include_bytes]: https://doc.rust-lang.org/std/macro.include_bytes.html
 [concat]: https://doc.rust-lang.org/std/macro.concat.html
 [env]: https://doc.rust-lang.org/std/macro.env.html
+[const]: https://doc.rust-lang.org/std/keyword.const.html
+[pixel]: https://en.wikipedia.org/wiki/Pixel
+[point]: https://en.wikipedia.org/wiki/Point_(typography)
+[points_vs_pixels]: https://graphicdesign.stackexchange.com/questions/199/point-vs-pixel-what-is-the-difference
+[newline]: https://en.wikipedia.org/wiki/Newline
+[font_glyph]: https://docs.rs/rusttype/0.9.3/rusttype/enum.Font.html#method.glyph
+[control_character]: https://en.wikipedia.org/wiki/Control_character
+[notdef]: https://learn.microsoft.com/en-us/typography/opentype/spec/recom#glyph-0-the-notdef-glyph
+[leading]: https://en.wikipedia.org/wiki/Leading
