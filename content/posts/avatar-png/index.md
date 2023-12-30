@@ -505,8 +505,9 @@ const FONT_DATA: &[u8] = include_bytes!(concat!(
 
 async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
     let text = format!("Hello,\n{}", addr.ip());
-    let img = ImageBuffer::from_pixel(WIDTH, HEIGHT, BACKGROUND_COLOR);
-    draw_text_mut(&mut img, TEXT_COLOR, X, Y, SCALE, &FONT, &text);
+    let font = Font::try_from_bytes(FONT_DATA).unwrap();
+    let mut img = ImageBuffer::from_pixel(WIDTH, HEIGHT, BACKGROUND_COLOR);
+    draw_text_mut(&mut img, TEXT_COLOR, X, Y, SCALE, &font, &text);
 
     let mut cursor = Cursor::new(vec![]);
     img.write_to(&mut cursor, ImageOutputFormat::Png).unwrap();
@@ -551,12 +552,9 @@ ourselves and draw what goes on the next line with a new `y` offset.
 
 ```rust
     let ip = addr.ip();
-
-    // ..
-
-    draw_text_mut(&mut img, TEXT_COLOR, X, Y, SCALE, &FONT, "Hello,");
+    draw_text_mut(&mut img, TEXT_COLOR, X, Y, SCALE, &font, "Hello,");
     let y = Y + SCALE.y as i32;
-    draw_text_mut(&mut img, TEXT_COLOR, X, y, SCALE, &FONT, &format!("{ip}!"));
+    draw_text_mut(&mut img, TEXT_COLOR, X, y, SCALE, &font, &format!("{ip}!"));
 ```
 
 I chose to just add `SCALE.y` to the original `Y`, which is playing fast and
@@ -571,8 +569,10 @@ something like this.
 
 ## Room for Improvement
 
-In no particular order here's a grab bag of potential improvements. I've made
-some of them and saved others for another day.
+I've not gone back and run an old Apache instance, so I can't say with 100%
+certainty that we've got a pixel perfect replica of the original, but I think
+it's darn close. There's still more to think about though. Here's a grab bag of
+potential improvements, some I've made and some I've saved for another day.
 
 ### Using One `Font`
 
@@ -580,6 +580,29 @@ Earlier I mentioned that our `Font` couldn't be `const`. That's true, but with
 a little effort it can at least be `static`. I don't always love globals, but
 it feels silly to create a new `Font` on each request when it could be the same
 darn font every time.
+
+I initially thought to use the [`lazy_static`][lazy_static] crate for this
+purpose, but since Rust 1.70.0 stablized [`OnceLock`][oncelock] I thought I'd
+give that a try. Why not use a standard library approach if you can?
+
+Until [`LazyLock`][lazylock] stablizes it seems like the most ergonomic use of
+`OnceLock` for what we want involves creating an accessor function.
+
+```rust
+use std::sync::OnceLock;
+
+fn font() -> &'static Font<'static> {
+    static FONT: OnceLock<Font> = OnceLock::new();
+    FONT.get_or_init(|| Font::try_from_bytes(FONT_DATA).expect("Built-in font data was invalid"))
+}
+```
+
+At the call site we just swap a `&font` for a `font()` and we're done. One
+`Font`.
+
+Normally I avoid potential panics as much as I can, but the only way
+that `try_from_bytes` can reasonably fail is if the `.ttf` file is invalid at
+compile time. In this scenario an [`expect`][expect] seems acceptable to me.
 
 ### Error Handling
 
@@ -672,3 +695,7 @@ darn font every time.
 [control_character]: https://en.wikipedia.org/wiki/Control_character
 [notdef]: https://learn.microsoft.com/en-us/typography/opentype/spec/recom#glyph-0-the-notdef-glyph
 [leading]: https://en.wikipedia.org/wiki/Leading
+[lazy_static]: https://docs.rs/lazy_static/1.4.0/lazy_static/index.html
+[oncelock]: https://doc.rust-lang.org/stable/std/sync/struct.OnceLock.html
+[lazylock]: https://doc.rust-lang.org/std/sync/struct.LazyLock.html
+[expect]: https://doc.rust-lang.org/std/option/enum.Option.html#method.expect
