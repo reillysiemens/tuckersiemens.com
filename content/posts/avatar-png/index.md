@@ -18,14 +18,14 @@ intro paragraph.`
 
 `TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="hello-localhost.png" height="256" width="256" alt="TODO">
+  <img style="height: 256px; width:256px;" src="localhost-ipv4.png" height="256" width="256" alt="TODO">
 </div>
 
 These files are web applications that generate PNGs on request containing a
 friendly greeting with the IP address of the requester.
 
 The PHP was originally written by Andrew Kvalheim probably around 2010. Its
-filename at that time was avatar.png, so as to give the illusion that it was a
+filename at that time was `avatar.png`, giving the illusion that it was a
 static file.
 
 Used for Skype (I think? what else?) chat between university employees. Would
@@ -702,6 +702,16 @@ Until now we've assumed that everything is using [IPv4], but it's the tail end
 of 2023, so we should probably at least think about [IPv6]. Unfortunately
 things get ugly in a hurry.
 
+In fairness though, I'm not sure how well the original PHP's
+
+```php
+<?php
+    $ip = explode('.' $_SERVER['REMOTE_ADDR'], 4);
+?>
+```
+
+handled IPv6, so this is well off the beaten path.
+
 #### Allowing IPv6 Connections
 
 With what's been written so far if you try to make an IPv6 connection you're
@@ -735,13 +745,13 @@ I _think_ in order to make it work in both Windows and Linux you'd have to
 
 - Listen on `::`.
 - _Also_ listen on `0.0.0.0`.
-- Spawn two tasks [`task`][task], each with their own copy of the app, and put
+- Spawn two [tasks][task], each with their own copy of the app, and put
   them in a [`JoinSet`][joinset].
 - Hope and pray (or check) that `/proc/sys/net/ipv6/bindv6only` is set,
   otherwise Linux will get mad at you because it's _already_ listening on both.
 
-I couldn't be bothered. I'm running the application on Linux and I control the
-kernel, so it's working for me. 🤷‍♂️
+I couldn't be bothered. I'd choose to run the application on Linux and I
+control the kernel, so it's working for me. 🤷‍♂️
 
 #### Displaying IPv4 Correctly
 
@@ -875,7 +885,7 @@ I'm sure that by now at least one person has been screaming "Use [SVG][svg]!"
 in their mind. Personally, I'm not convinced it's necessarily a better fit, but
 it's not something I know much about, so I'm open to being wrong.
 
-I applied little I know to create an SVG.
+I applied what little I know to create an SVG.
 
 ```svg
 <svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
