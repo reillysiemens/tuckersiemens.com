@@ -2,15 +2,17 @@
 title = "avatar.png"
 description = "Dynamically generating PNGs with your IP address in them."
 url = "posts/avatar.png"
-date = 2023-12-30T00:00:00-08:00
+date = 2023-12-31T00:00:00-08:00
 [taxonomies]
 tags = ["Rust", "PHP", "webdev", "PNG"]
 +++
 
-No, not that Avatar. And not the other one either.
+No, not that Avatar. And not the other one either. This post is about
+`avatar.png`, a handful of lines of PHP that have inspired me for a long time.
 
-`TODO: Don't forget to add a summary. Should probably just be a portion of the
-intro paragraph.`
+Around 2011 or 2012 a friend of mine, [Andrew Kvalheim][andrew_kvalheim], blew
+my mind when he made his Skype profile picture display the IP address of the
+computer I was using. It might have looked a bit like this.
 
 <!-- more -->
 
@@ -18,24 +20,24 @@ intro paragraph.`
   <img style="height: 256px; width: 256px;" src="localhost-ipv4.png" alt="White text on a pinkish/purple background which says 'Hello, 127.0.0.1!'. The text is left-aligned and roughly vertically centered in the image.">
 </div>
 
-These files are web applications that generate PNGs on request containing a
-friendly greeting with the IP address of the requester.
+We were both working at our university's IT help desk and I think Skype for
+Business had just been rolled out to employees. If memory serves the
+application let you upload a profile picture or give a URL for one. The image
+was always fetched by the client, which made it possible to display a different
+image to each person viewing your profile picture.
 
-The PHP was originally written by Andrew Kvalheim probably around 2010. Its
-filename at that time was `avatar.png`, giving the illusion that it was a
-static file.
+For me this was practically magic. I was fairly early in my programming
+education at that point, so it took me a long time to really understand what
+was going on.
 
-Used for Skype (I think? what else?) chat between university employees. Would
-accept a URL for a profile picture. Image was fetched by the client. It might
-have been hosted on a student web service allowed to run PHP.
+The web server was serving a file named `avatar.png`. When viewed in a browser
+you got a PNG containing your IP address, but when you opened the file itself
+in a text editor it was PHP! How could one file be two different things
+depending on how you looked at it?
 
-Taught me the valuable lesson that file extensions are a lie, the web can do
-whatever the heck it wants, and `Content-Type` is king.
-
-There was magic in discovering the computer could be bent to one's whim
-dynamically like this.
-
-Child-like wonderment.
+I later learned that file extensions are mostly a suggestion and that with
+enough creativity you can make computers to do a lot of fun things. That file
+_can_ be two things at once, it just depends on your point of view.
 
 # PHP
 
@@ -1021,6 +1023,8 @@ async fn main() -> anyhow::Result<()> {
 ```
 
 Thanks for reading! Maybe I'll learn to write smaller posts next year. 🤣
+
+[andrew_kvalheim]: https://andrew.kvalhe.im/
 
 [server]: https://www.php.net/manual/en/reserved.variables.server.php
 [explode]: https://www.php.net/manual/en/function.explode.php
