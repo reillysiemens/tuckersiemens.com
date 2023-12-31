@@ -17,7 +17,7 @@ computer I was using. It might have looked a bit like this.
 <!-- more -->
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width: 256px;" src="localhost-ipv4.png" alt="White text on a pinkish/purple background which says 'Hello, 127.0.0.1!'. The text is left-aligned and roughly vertically centered in the image.">
+  <img style="height: 256px; width: 256px;" src="avatar.png" alt="White text on a pinkish/purple background which says 'Hello, 140.160.254.56!'. The text is left-aligned and roughly vertically centered in the image.">
 </div>
 
 We were both working at our university's IT help desk and I think Skype for
@@ -577,7 +577,7 @@ enough. At last, we can reproduce the original PHP with output that looks
 something like this.
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="with-newline.png" height="256" width="256" alt="TODO: Draw text on PNG">
+  <img style="height: 256px; width:256px;" src="localhost-ipv4.png" height="256" width="256" alt="TODO: Draw text on PNG">
 </div>
 
 ## Room for Improvement
