@@ -39,6 +39,11 @@ I later learned that file extensions are mostly a suggestion and that with
 enough creativity you can make computers to do a lot of fun things. That file
 _can_ be two things at once, it just depends on your point of view.
 
+Reflecting on the inspiration I've gotten from this simple program, I've spent
+a bit of time translating `avatar.png` from PHP to Rust. I learned way more
+than I bargained for in the process. Hopefully you'll learn something too as
+you read this.
+
 # PHP
 
 Here is the original PHP which generated `avatar.png`. Judging by when this was
@@ -87,9 +92,9 @@ In case you're not overly familiar with PHP, here's a quick rundown on what's ha
   docs do say
   > The first call to `imagecolorallocate()` fills the background color...
 
-- [`imagettftext`][imagettftext] &mdash; Write text to the image using TrueType
-  fonts. Interestingly this appears to read the `.ttf` file from disk on every
-  single request. 😬
+- [`imagettftext`][imagettftext] &mdash; Write text to the image using
+  [TrueType] fonts. Interestingly this appears to read the `.ttf` file from
+  disk on every single request. 😬
 
 - [`header`][header] &mdash; Send a raw [HTTP header][http_header].
   Importantly, this
@@ -463,7 +468,7 @@ The font used in the original PHP was [Ubuntu Mono][ubuntu_mono], which is
 freely available for download. We just need to put the file alongside our Rust
 code.
 
-In PHP-land with `imagettftext` we just specified the path to a [TrueType] font
+In PHP-land with `imagettftext` we just specified the path to a TrueType font
 file (`UbuntuMono-Regular.ttf`) and went on our merry way. Our Rust libraries
 want us to create a `Font`, which requires us to load the contents of that
 font file into our application.
