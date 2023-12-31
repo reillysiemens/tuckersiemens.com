@@ -242,7 +242,7 @@ steps in to give a lecture on [borrowing and ownership].
 
 The closure we've written captures `addr` by reference because `addr.ip()`
 borrows `self`. However, because the return of that closure is the whole
-`async` block, itself a `Future`, that reference is immediately invalidated.
+`async` block, itself a [`Future`][future], that reference is immediately invalidated.
 Thankfully the compiler warns us and tells us what to do. So helpful! 😎 The
 `move` gives ownership of `addr` to the returned `Future`.
 
@@ -318,7 +318,7 @@ img.save("avatar.png").unwrap();
 you'll get a blank canvas like this.
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="blank-canvas.png" height="256" width="256" alt="TODO: Add blank canvas PNG">
+  <img style="height: 256px; width:256px;" src="blank-canvas.png" height="256" width="256" alt="Nothing but a pinkish/purple background color.">
 </div>
 
 Sure enough, that's a PNG, but using `save` is disastrous to us for a few
@@ -538,7 +538,7 @@ async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse
 That handler will get us an image that looks something like this.
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="no-newline.png" height="256" width="256" alt="TODO: Add blank canvas PNG">
+  <img style="height: 256px; width:256px;" src="no-newline.png" height="256" width="256" alt="White text on a pinkish/purple background which says 'Hello,□127.0.0.'. After the last . a 1 is only partially visible.">
 </div>
 
 Which... doesn't really look right, does it? What the heck is the `□` and why
@@ -668,7 +668,7 @@ img.write_to(&mut cursor, ImageOutputFormat::Png).unwrap();
 The `write_to` method returns a [`Result<T, E>`][result] whose `E` is an
 [`ImageError`][imageerror]. Unfortunately, it's not quite as simple as
 returning `Result<impl IntoResponse, image::ImageError>` from our handler.
-Trying to do so yields a rare and disappointing mystery compliation error too
+Trying to do so yields a rare and disappointing mystery compilation error too
 long to reproduce here.
 
 After sleuthing in Axum's [error handling docs][axum_error_handling] you can
@@ -1068,6 +1068,7 @@ Thanks for reading! Maybe I'll learn to write smaller posts next year. 🤣
 [move]: https://doc.rust-lang.org/std/keyword.move.html
 [async_block]: https://doc.rust-lang.org/reference/expressions/block-expr.html#async-blocks
 [borrowing and ownership]: https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html
+[future]: https://doc.rust-lang.org/std/future/trait.Future.html
 [curl]: https://curl.se/
 
 [image]: https://crates.io/crates/image
