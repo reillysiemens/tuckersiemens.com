@@ -181,7 +181,7 @@ async fn main() {
     let app = Router::new().route(
         "/",
         get(|ConnectInfo(addr): ConnectInfo<SocketAddr>| async move {
-            format!("Hello, {}!", addr.ip())
+            format!("Hello,\n{}!", addr.ip())
         }),
     );
 
@@ -214,7 +214,7 @@ steps in to give a lecture on [borrowing and ownership].
 </span><span>   <span style="color:#458588">|</span>
 </span><span><span style="color:#458588">8  |</span>           get(|ConnectInfo(addr): ConnectInfo&lt;SocketAddr&gt;| async {
 </span><span>   <span style="color:#458588">|</span>  <span style="color:#fa5c4b">__________________________________________________________^</span>
-</span><span><span style="color:#458588">9  |</span> <span style="color:#fa5c4b">|</span>             format!("Hello, {}!", addr.ip())
+</span><span><span style="color:#458588">9  |</span> <span style="color:#fa5c4b">|</span>             format!("Hello,\n{}!", addr.ip())
 </span><span>   <span style="color:#458588">|</span> <span style="color:#fa5c4b">|</span>                                   <span style="color:#458588">---- `addr` is borrowed here</span>
 </span><span><span style="color:#458588">10 |</span> <span style="color:#fa5c4b">|</span>         }),
 </span><span>   <span style="color:#458588">|</span> <span style="color:#fa5c4b">|_________^ may outlive borrowed value `addr`</span>
@@ -224,7 +224,7 @@ steps in to give a lecture on [borrowing and ownership].
 </span><span>   <span style="color:#458588">|</span>
 </span><span><span style="color:#458588">8  |</span>           get(|ConnectInfo(addr): ConnectInfo&lt;SocketAddr&gt;| async {
 </span><span>   <span style="color:#458588">|</span>  <span style="color:#98971a">__________________________________________________________^</span>
-</span><span><span style="color:#458588">9  |</span> <span style="color:#98971a">|</span>             format!("Hello, {}!", addr.ip())
+</span><span><span style="color:#458588">9  |</span> <span style="color:#98971a">|</span>             format!("Hello,\n{}!", addr.ip())
 </span><span><span style="color:#458588">10 |</span> <span style="color:#98971a">|</span>         }),
 </span><span>   <span style="color:#458588">|</span> <span style="color:#98971a">|_________^</span>
 </span><span><span style="color:#83a598">help</span>: to force the async block to take ownership of `addr` (and any other referenced variables), use the `move` keyword
@@ -248,7 +248,7 @@ closure.
 
 ```rust
 async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> String {
-    format!("Hello, {}", addr.ip())
+    format!("Hello,\n{}", addr.ip())
 }
 ```
 
@@ -263,7 +263,8 @@ was served. We can verify this works as intended with `curl`.
 
 ```bash
 $ curl http://localhost:3000/avatar.png
-Hello, 127.0.0.1!
+Hello,
+127.0.0.1!
 ```
 
 ## Creating a PNG
@@ -403,7 +404,7 @@ Putting it all together our current handler looks like this.
 
 ```rust
 async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse {
-    let _text = format!("Hello, {}", addr.ip());
+    let _text = format!("Hello,\n{}", addr.ip());
     let img = ImageBuffer::from_pixel(WIDTH, HEIGHT, BACKGROUND_COLOR);
 
     let mut cursor = Cursor::new(vec![]);
