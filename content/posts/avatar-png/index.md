@@ -1061,7 +1061,6 @@ async fn main() -> anyhow::Result<()> {
 Thanks for reading! Maybe I'll learn to write smaller posts next year. 🤣
 
 [andrew_kvalheim]: https://andrew.kvalhe.im/
-
 [server]: https://www.php.net/manual/en/reserved.variables.server.php
 [explode]: https://www.php.net/manual/en/function.explode.php
 [explode_why]: https://www.reddit.com/r/lolphp/comments/mdkvzl/comment/gsafb5u/
@@ -1079,7 +1078,6 @@ Thanks for reading! Maybe I'll learn to write smaller posts next year. 🤣
 [imagedestroy]: https://www.php.net/manual/en/function.imagedestroy.php
 [imagecreate_example]: https://www.php.net/manual/en/function.imagecreate.php#refsect1-function.imagecreate-examples
 [point]: https://en.wikipedia.org/wiki/Point_(typography)
-
 [The Book]: https://doc.rust-lang.org/book/
 [code golf]: https://en.wikipedia.org/wiki/Code_golf
 [Apache]: https://httpd.apache.org/
@@ -1102,7 +1100,6 @@ Thanks for reading! Maybe I'll learn to write smaller posts next year. 🤣
 [borrowing and ownership]: https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html
 [future]: https://doc.rust-lang.org/std/future/trait.Future.html
 [curl]: https://curl.se/
-
 [image]: https://crates.io/crates/image
 [image_buffer]: https://docs.rs/image/0.24.7/image/struct.ImageBuffer.html
 [image_buffer_from_pixel]: https://docs.rs/image/0.24.7/image/struct.ImageBuffer.html#method.from_pixel
@@ -1122,7 +1119,6 @@ Thanks for reading! Maybe I'll learn to write smaller posts next year. 🤣
 [http_response]: https://docs.rs/http/1.0.0/http/response/struct.Response.html
 [axum_into_response]: https://docs.rs/axum/0.7.1/axum/response/trait.IntoResponse.html
 [blanket implementations]: https://users.rust-lang.org/t/what-are-blanket-implementations/49904
-
 [imageproc]: https://docs.rs/imageproc/0.23.0/imageproc/index.html
 [draw_text_mut]: https://docs.rs/imageproc/0.23.0/imageproc/drawing/fn.draw_text_mut.html
 [imageproc_drawing_canvas]: https://docs.rs/imageproc/0.23.0/imageproc/drawing/trait.Canvas.html
