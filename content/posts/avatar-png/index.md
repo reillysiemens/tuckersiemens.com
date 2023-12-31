@@ -207,34 +207,32 @@ Astute readers will have noticed that we also added the [`move`][move] keyword
 to our [`async` block][async_block]. Without this our friendly compiler
 steps in to give a lecture on [borrowing and ownership].
 
-`TODO: Should this section get colored like the compiler output?`
+<pre style="background:#282828;color:#fdf4c1aa"><code><span><span style="color:#fa5c4b">error[E0373]</span>: async block may outlive the current function, but it borrows `addr`, which is owned by the current function
+</span><span>  <span style="color:#458588">--&gt;</span> src/main.rs:8:58
+</span><span>   <span style="color:#458588">|</span>
+</span><span><span style="color:#458588">8  |</span>           get(|ConnectInfo(addr): ConnectInfo&lt;SocketAddr&gt;| async {
+</span><span>   <span style="color:#458588">|</span>  <span style="color:#fa5c4b">__________________________________________________________^</span>
+</span><span><span style="color:#458588">9  |</span> <span style="color:#fa5c4b">|</span>             format!("Hello, {}!", addr.ip())
+</span><span>   <span style="color:#458588">|</span> <span style="color:#fa5c4b">|</span>                                   <span style="color:#458588">---- `addr` is borrowed here</span>
+</span><span><span style="color:#458588">10 |</span> <span style="color:#fa5c4b">|</span>         }),
+</span><span>   <span style="color:#458588">|</span> <span style="color:#fa5c4b">|_________^ may outlive borrowed value `addr`</span>
+</span><span>   <span style="color:#458588">|</span>
+</span><span><span style="color:#98971a">note</span>: async block is returned here
+</span><span>  <span style="color:#458588">--&gt;</span> src/main.rs:8:58
+</span><span>   <span style="color:#458588">|</span>
+</span><span><span style="color:#458588">8  |</span>           get(|ConnectInfo(addr): ConnectInfo&lt;SocketAddr&gt;| async {
+</span><span>   <span style="color:#458588">|</span>  <span style="color:#98971a">__________________________________________________________^</span>
+</span><span><span style="color:#458588">9  |</span> <span style="color:#98971a">|</span>             format!("Hello, {}!", addr.ip())
+</span><span><span style="color:#458588">10 |</span> <span style="color:#98971a">|</span>         }),
+</span><span>   <span style="color:#458588">|</span> <span style="color:#98971a">|_________^</span>
+</span><span><span style="color:#83a598">help</span>: to force the async block to take ownership of `addr` (and any other referenced variables), use the `move` keyword
+</span><span>   <span style="color:#458588">|</span>
+</span><span><span style="color:#458588">8  |</span>         get(|ConnectInfo(addr): ConnectInfo&lt;SocketAddr&gt;| async <span style="color:#98971a">move</span> {
+</span><span>   <span style="color:#458588">|</span>                                                                <span style="color:#98971a">++++</span>
+</span><span>
+</span><span>For more information about this error, try `rustc --explain E0373`.
+</span></code></pre>
 
-```
-error[E0373]: async block may outlive the current function, but it borrows `addr`, which is owned by the current function
-  --> src/main.rs:8:58
-   |
-8  |           get(|ConnectInfo(addr): ConnectInfo<SocketAddr>| async {
-   |  __________________________________________________________^
-9  | |             format!("Hello, {}!", addr.ip())
-   | |                                   ---- `addr` is borrowed here
-10 | |         }),
-   | |_________^ may outlive borrowed value `addr`
-   |
-note: async block is returned here
-  --> src/main.rs:8:58
-   |
-8  |           get(|ConnectInfo(addr): ConnectInfo<SocketAddr>| async {
-   |  __________________________________________________________^
-9  | |             format!("Hello, {}!", addr.ip())
-10 | |         }),
-   | |_________^
-help: to force the async block to take ownership of `addr` (and any other referenced variables), use the `move` keyword
-   |
-8  |         get(|ConnectInfo(addr): ConnectInfo<SocketAddr>| async move {
-   |                                                                ++++
-
-For more information about this error, try `rustc --explain E0373`.
-```
 
 What we've written expects the closure to capture `addr` by reference. However,
 the compiler knows that Axum/Tokio will let the `async` block outlive the
