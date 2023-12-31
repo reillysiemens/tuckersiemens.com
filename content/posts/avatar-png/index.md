@@ -860,7 +860,12 @@ promise.
 
 OK, well just make the PNG wider then!
 
-<div style="display: flex; align-items: center; justify-content: center; overflow: auto;">
+<style>
+/* Allow scrolling the image overflow on mobile devices. */
+.wide-boi { display: flex; align-items: center; justify-content: center; overflow: auto; }
+@media(max-width: 700px) { .wide-boi { justify-content: left; } }
+</style>
+<div class="wide-boi">
   <img style="height: 256px; width:648px;" src="wide-boi.png" alt="White text
 on a pinkish/purple background which says 'Hello,' on one line and
 '2001:0db8:85a3:0000:0000:8a2e:0370:7334!' on the next. The text all fits
@@ -1171,5 +1176,4 @@ Thanks for reading! Maybe I'll learn to write smaller posts next year. 🤣
 [RFC 5952]: https://datatracker.ietf.org/doc/html/rfc5952
 [svg]: https://en.wikipedia.org/wiki/SVG
 [text]: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/tspan
-
-[avatar_png_github]: https://github.com/reillysiemens/avatar
+[avatar_png_github]: https://github.com/reillysiemens/avatar/tree/ee21f6161d3ab64f40f9e6b762ff4d0c931d2ac9
