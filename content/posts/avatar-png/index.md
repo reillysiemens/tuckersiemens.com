@@ -240,13 +240,11 @@ steps in to give a lecture on [borrowing and ownership].
 </span><span>For more information about this error, try `rustc --explain E0373`.
 </span></code></pre>
 
-
-What we've written expects the closure to capture `addr` by reference. However,
-the compiler knows that Axum/Tokio will let the `async` block outlive the
-closure itself, thus invalidating the reference. Thankfully, it warns us and
-tells us what to do. So helpful! 😎
-
-`TODO: Double check the correctness of the above statement.`
+The closure we've written captures `addr` by reference because `addr.ip()`
+borrows `self`. However, because the return of that closure is the whole
+`async` block, itself a `Future`, that reference is immediately invalidated.
+Thankfully the compiler warns us and tells us what to do. So helpful! 😎 The
+`move` gives ownership of `addr` to the returned `Future`.
 
 The other way to get around this is to make our handler a function instead of a
 closure.
