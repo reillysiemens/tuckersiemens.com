@@ -42,20 +42,14 @@ Child-like wonderment.
 
 # PHP
 
-`TODO: Which version of PHP would have been used? Spring-Summer 2010? Probably
-some version of Ubuntu and Apache with mod PHP. Is it possible to run a similar
-server for local testing during this post?`
-
-``TODO: Does this load `UbuntuMono-Regular.ttf` on each request? According to the
-docs it sure looks like it. How big is that file? What's the perf cost to load
-it? Can I verify with `strace` or `dtrace` or some such? Or just do a quick
-walkthrough of the PHP source code?``
+Here is the original PHP which generated `avatar.png`. Judging by when this was
+written I think it probably would have run on PHP 5.3 or 5.4.
 
 ```php
 <?php
 
     //Get IP address
-    $ip = explode('.' $_SERVER['REMOTE_ADDR'], 4);
+    $ip = explode('.', $_SERVER['REMOTE_ADDR'], 4);
 
     //Render image
     $image = @imagecreate(256, 256)
@@ -71,54 +65,82 @@ walkthrough of the PHP source code?``
 ?>
 ```
 
-Buckle up, 'cuz we're gonna do a bit of everything. Old code, new code, and a
-bit of lore in between.
+In case you're not overly familiar with PHP, here's a quick rundown on what's happening there.
 
-- [server] &mdash; ``TODO: Talk about the magic that is `$_SERVER`. How does that handle IPv6 now?``
-- [explode] &mdash; ``TODO: what is the history of this function name? Does it actually have to do with function name length? Is this call missing a `,`? Also, why bother with this? Is `$_SERVER['REMOTE_ADDR']` not a string already?``
-- [imagecreate] &mdash; ``TODO: what is GD? Why on earth is the `@` sigil used?` Apparently it's for error suppression. https://www.php.net/manual/en/language.operators.errorcontrol.php``
-- [die] &mdash; ``TODO: why is this called `die`? What happens if it dies? 500 Internal Server Error? `exit()` the program?``
-- [imagecolorallocate] &mdash; `TODO: Why does this fill in the background?`
-- [imagettftext] &mdash; `TODO: How does this handle newlines?`
-- [header] &mdash; `TODO: Is order important? Looks like yes from docs!`
-- [imagepng] &mdash; `TODO: What is this magic? No return value? Just stream it?`
-- [imagedestroy] &mdash; `TODO: Why is this even necessary?`
+- [`$_SERVER`][server] &mdash; An array containing a bunch of information about
+  the server and its environment. The `REMOTE_ADDR` element has
+  > The IP address from which the user is viewing the current page. 
 
-``TODO: Might be worth noting that a lot of this comes from the first
-`imagecreate` example. A good example of copying what you need and adapting it
-to your purposes. As we become more experienced software engineers we often
-think it needs to be just so, but there's real benefit from just grabbing what
-you find and using it, especially for low-stakes fun.``
+- [`explode`][explode] &mdash; Splits a string up by some separator. I can't
+  find official docs, but Reddit has some [thoughts][explode_why] about the odd
+  name.
 
-`TODO: How are all of these things magically in scope?`
+- [`imagecreate`][imagecreate] &mdash; Part of the ["Graphics Draw"][gd]
+  library. Creates a new [`GdImage`][gdimage] object. The [`@`][at_sigil] sigil
+  in front of this call is for error suppression.
+
+- [`die`][die] &mdash; PHP refuses to have normal names. Equivalent to
+  [`exit`][exit], which I think exits the whole process. Docs discussion leads
+  me to believe this is disastrous for the client.
+
+- [`imagecolorallocate`][imagecolorallocate] &mdash; Allocate an RGB color for
+  an image. What it means to "allocate" a color is never clarified, but the
+  docs do say
+  > The first call to `imagecolorallocate()` fills the background color...
+
+- [`imagettftext`][imagettftext] &mdash; Write text to the image using TrueType
+  fonts. Interestingly this appears to read the `.ttf` file from disk on every
+  single request. 😬
+
+- [`header`][header] &mdash; Send a raw [HTTP header][http_header].
+  Importantly, this
+  > ... must be called before any actual output is sent ...
+
+  So, don't mess up that order!
+
+- [`imagepng`][imagepng] &mdash; Output a PNG image. Returns `true` on success
+  and `false` otherwise. Somehow magically streams the image to the client in
+  between.
+
+- [`imagedestroy`][imagedestroy] &mdash; This used to free any memory
+  associated with the `GdImage` object, but these days it doesn't do anything
+  at all.
+
+I want to note that while reading the PHP docs I discovered that a
+significant amount of this code overlaps with the [first `imagecreate`
+example][imagecreate_example]. I think this showcases the benefits of quickly
+copying what you need and adapting it to your purposes. As we become more
+experienced software engineers we often over-engineer the heck out of things
+(that's half of what this post is about). But there's real joy in just grabbing
+what you find and using it as-is, especially for low-stakes fun.
 
 # Rust
 
-`Ok`. Let's set some ground rules.
+`Ok`. Now that we understand the PHP well enough to translate it, let's set
+some ground rules.
 
 1. I like it when blog posts build up solutions, showing mistakes and oddities
    on the way. If you want to skip all that, here's
    [the finished product](#the-finished-product).
 
-2. I'm assuming a basic level of Rust understanding. I don't expect you to have
-   read [The Book] cover to cover, but I won't annotate each line in detail
-   either.
+2. I assume a basic level of Rust understanding. I don't expect you to have
+   read [The Book] cover to cover, but I'll skip over many explanations.
 
 3. As I translate this, keep in mind that PHP is a language made for the web.
    I'm not competing for brevity and certainly not trying to play [code golf].
-   The Rust code **will** be longer.
+   The Rust code **WILL** be longer.
 
 4. I'll cut some corners in the initial implementation for the sake of
-   understanding, but try to come back and make everything tidy by the end.
+   understanding, but try to tidy things up by the end.
 
 ## Choosing A Framework
 
 The original PHP was likely run in [Apache] using [mod_php], which appears to
-be out of style these days. In Rust we often don't run a separate server like
-Apache or [Nginx]. Instead the application and server are compiled into the
-same binary and we choose between frameworks. I've been enjoying [Axum] lately,
-so that's what I used, but I'm sure [Actix] or [Rocket] would have been fine
-too.
+be out of style these days. In Rust we don't necessarily run a separate server
+like Apache or [Nginx]. Instead the application and server are compiled into
+the same binary and we choose between frameworks. I've been enjoying [Axum]
+lately, so that's what I used, but I'm sure [Actix] or [Rocket] would have been
+fine too.
 
 First, we create a new Rust project and add our dependencies.
 
@@ -706,7 +728,7 @@ In fairness though, I'm not sure how well the original PHP's
 
 ```php
 <?php
-    $ip = explode('.' $_SERVER['REMOTE_ADDR'], 4);
+    $ip = explode('.', $_SERVER['REMOTE_ADDR'], 4);
 ?>
 ```
 
@@ -1022,13 +1044,20 @@ Thanks for reading! Maybe I'll learn to write smaller posts next year. 🤣
 
 [server]: https://www.php.net/manual/en/reserved.variables.server.php
 [explode]: https://www.php.net/manual/en/function.explode.php
+[explode_why]: https://www.reddit.com/r/lolphp/comments/mdkvzl/comment/gsafb5u/
 [imagecreate]: https://www.php.net/manual/en/function.imagecreate.php
+[gd]: https://www.php.net/manual/en/intro.image.php
+[gdimage]: https://www.php.net/manual/en/class.gdimage.php
+[at_sigil]: https://www.php.net/manual/en/language.operators.errorcontrol.php
 [die]: https://www.php.net/manual/en/function.die.php
+[exit]: https://www.php.net/manual/en/function.exit.php
 [imagecolorallocate]: https://www.php.net/manual/en/function.imagecolorallocate.php
 [imagettftext]: https://www.php.net/manual/en/function.imagettftext.php
 [header]: https://www.php.net/manual/en/function.header.php
+[http_header]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
 [imagepng]: https://www.php.net/manual/en/function.imagepng.php
 [imagedestroy]: https://www.php.net/manual/en/function.imagedestroy.php
+[imagecreate_example]: https://www.php.net/manual/en/function.imagecreate.php#refsect1-function.imagecreate-examples
 [point]: https://en.wikipedia.org/wiki/Point_(typography)
 
 [finished production code]: TODO_TODO_TODO_TODO_TODO_TODO_TODO
