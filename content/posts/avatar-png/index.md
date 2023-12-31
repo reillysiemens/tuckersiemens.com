@@ -17,7 +17,8 @@ computer I was using. It might have looked a bit like this.
 <!-- more -->
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width: 256px;" src="avatar.png" alt="White text on a pinkish/purple background which says 'Hello, 140.160.254.56!'. The text is left-aligned and roughly vertically centered in the image.">
+  <img style="height: 256px; width: 256px;" src="avatar.png" alt="White text on
+a pinkish/purple background which says 'Hello, 140.160.254.56!'.">
 </div>
 
 We were both working at our university's IT help desk and I think Skype for
@@ -318,7 +319,8 @@ img.save("avatar.png").unwrap();
 you'll get a blank canvas like this.
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="blank-canvas.png" height="256" width="256" alt="Nothing but a pinkish/purple background color.">
+  <img style="height: 256px; width:256px;" src="blank-canvas.png" alt="Nothing
+but a pinkish/purple background color.">
 </div>
 
 Sure enough, that's a PNG, but using `save` is disastrous to us for a few
@@ -538,7 +540,9 @@ async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse
 That handler will get us an image that looks something like this.
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="no-newline.png" height="256" width="256" alt="White text on a pinkish/purple background which says 'Hello,□127.0.0.'. After the last . a 1 is only partially visible.">
+  <img style="height: 256px; width:256px;" src="no-newline.png" alt="White text
+on a pinkish/purple background which says 'Hello,□127.0.0.'. After the last . a
+1 is only partially visible.">
 </div>
 
 Which... doesn't really look right, does it? What the heck is the `□` and why
@@ -581,7 +585,9 @@ enough. At last, we can reproduce the original PHP with output that looks
 something like this.
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="localhost-ipv4.png" height="256" width="256" alt="TODO: Draw text on PNG">
+  <img style="height: 256px; width:256px;" src="localhost-ipv4.png" alt="White
+text on a pinkish/purple background which says 'Hello,' on one line and
+'127.0.0.1!' on the next.">
 </div>
 
 ## Room for Improvement
@@ -785,7 +791,10 @@ $ curl -4 -O http://localhost:3000/avatar.png
 you're likely to see something like this.
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="ipv4-mapped.png" height="256" width="256" alt="TODO: Draw text on PNG">
+  <img style="height: 256px; width:256px;" src="ipv4-mapped.png" alt="White
+text on a pinkish/purple background which says 'Hello,' on one line and
+'::ffff:127.0.0.' on the next. After the last . a 1 is only partially
+visible.">
 </div>
 
 In this form an IPv4 address like `127.0.0.1` is represented in an IPv6 address
@@ -804,20 +813,27 @@ more of a pain in the ass to deal with before that.
 IPv4 works again!
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="localhost-ipv4.png" height="256" width="256" alt="TODO: Draw text on PNG">
+  <img style="height: 256px; width:256px;" src="localhost-ipv4.png" alt="White
+text on a pinkish/purple background which says 'Hello,' on one line and
+'127.0.0.1!' on the next.">
 </div>
 
 IPv6 also works!
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="localhost-ipv6.png" height="256" width="256" alt="TODO: Draw text on PNG">
+  <img style="height: 256px; width:256px;" src="localhost-ipv6.png" alt="White
+text on a pinkish/purple background which says 'Hello,' on one line and '::1!'
+on the next.">
 </div>
 
 Haha, just kidding, it absolutely does not. Most IPv6 addresses are way longer
 than `::1`.
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="bad-ipv6.png" height="256" width="256" alt="TODO: Draw text on PNG">
+  <img style="height: 256px; width:256px;" src="bad-ipv6.png" alt="White text
+on a pinkish/purple background which says 'Hello,' on one line and
+'2001:0db8:85a3:' on the next. After the last : a 0 is only partially
+visible.">
 </div>
 
 #### Displaying IPv6 Correctly
@@ -831,7 +847,11 @@ canvas.
 Just decrease the font size, you might say...
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="font-for-ants.png" height="256" width="256" alt="TODO: Draw text on PNG">
+  <img style="height: 256px; width:256px;" src="font-for-ants.png" alt="White
+text on a pinkish/purple background which says 'Hello,' on one line and
+'2001:0db8:85a3:0000:0000:8a2e:0370:7334!' on the next. The text all fits
+within the image, but is extremely small compared to similar images and not
+easily read.">
 </div>
 
 Your eyes must be better than mine. That's not easy to read. I had to set the
@@ -840,8 +860,12 @@ promise.
 
 OK, well just make the PNG wider then!
 
-<div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:648px;" src="wide-boi.png" height="256" width="648" alt="TODO: Draw text on PNG">
+<div style="display: flex; align-items: center; justify-content: center; overflow: auto;">
+  <img style="height: 256px; width:648px;" src="wide-boi.png" alt="White text
+on a pinkish/purple background which says 'Hello,' on one line and
+'2001:0db8:85a3:0000:0000:8a2e:0370:7334!' on the next. The text all fits
+within the image, but the image itself is extremely large compared to similar
+images.">
 </div>
 
 Cool, now it's `648` pixels wide. If you're reading on mobile it might well
@@ -852,7 +876,10 @@ Additionally, it likely violates an original constraint that the image be 256 x
 Uhh... why are you making this so complicated? We did newlines before, wrap the text!
 
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="wrapped-text.png" height="256" width="256" alt="TODO: Draw text on PNG">
+  <img style="height: 256px; width:256px;" src="wrapped-text.png" alt="White
+text on a pinkish/purple background which says 'Hello,' on the first line,
+'2001:0db8:85a3:' on the second, '0000:0000:8a2e:' on the third line, and
+'0370:7334!' on the fourth line. The text is not centered in the image.">
 </div>
 
 Huh. Actually, I don't hate that, but it no longer looks centered. Also, IPv6
