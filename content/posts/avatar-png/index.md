@@ -4,7 +4,7 @@ description = "Dynamically generating PNGs with your IP address in them."
 url = "posts/avatar.png"
 date = 2023-12-31T00:00:00-08:00
 [taxonomies]
-tags = ["Rust", "PHP", "webdev", "PNG"]
+tags = ["Rust", "PHP", "Networking", "webdev", "PNG"]
 +++
 
 No, not that Avatar. And not the other one either. This post is about
