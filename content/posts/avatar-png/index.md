@@ -1,6 +1,6 @@
 +++
 title = "avatar.png"
-description = "TODO"
+description = "Dynamically generating PNGs with your IP address in them."
 url = "posts/avatar.png"
 date = 2023-12-30T00:00:00-08:00
 [taxonomies]
@@ -9,16 +9,13 @@ tags = ["Rust", "PHP", "webdev", "PNG"]
 
 No, not that Avatar. And not the other one either.
 
-`TODO: Is this even a good title?`
-
 `TODO: Don't forget to add a summary. Should probably just be a portion of the
 intro paragraph.`
 
 <!-- more -->
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
-  <img style="height: 256px; width:256px;" src="localhost-ipv4.png" height="256" width="256" alt="TODO">
+  <img style="height: 256px; width: 256px;" src="localhost-ipv4.png" alt="White text on a pinkish/purple background which says 'Hello, 127.0.0.1!'. The text is left-aligned and roughly vertically centered in the image.">
 </div>
 
 These files are web applications that generate PNGs on request containing a
@@ -144,12 +141,10 @@ fine too.
 
 First, we create a new Rust project and add our dependencies.
 
-`TODO: Upgrade Axum to 0.7.3`
-
 ```bash
 $ cargo new avatar && cd avatar
-$ cargo add axum@0.7.1
-$ cargo add tokio@1.34.0 --features=rt-multi-thread,macros
+$ cargo add axum@0.7.3
+$ cargo add tokio@1.35.1 --features=rt-multi-thread,macros
 ```
 
 Then, we add Axum's ["Hello, World!"][hello_world] example to `src/main.rs` and
@@ -281,8 +276,6 @@ plaintext. For parity with the PHP we need to serve an image. Fortunately, the
 $ cargo add image@0.24.7
 ```
 
-``TODO: Note the admirable use of generics in the `image` types.``
-
 ### Background
 
 The image crate allows us to create a PNG in a fashion similar to the PHP. The
@@ -320,7 +313,6 @@ img.save("avatar.png").unwrap();
 
 you'll get a blank canvas like this.
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
   <img style="height: 256px; width:256px;" src="blank-canvas.png" height="256" width="256" alt="TODO: Add blank canvas PNG">
 </div>
@@ -466,16 +458,16 @@ $ cargo add rusttype@0.9.3
 
 #### Getting a Font
 
-`TODO: Should I use the same font as the code for this blog?`
-
-`TODO: What is the licensing for the font? Can I even use it? https://launchpad.net/ubuntu-font-licence https://bazaar.launchpad.net/~ufl-contributors/ubuntu-font-licence/trunk/view/head:/ubuntu-font-licence-1.0.txt`
+The font used in the original PHP was [Ubuntu Mono][ubuntu_mono], which is
+freely available for download. We just need to put the file alongside our Rust
+code.
 
 In PHP-land with `imagettftext` we just specified the path to a [TrueType] font
 file (`UbuntuMono-Regular.ttf`) and went on our merry way. Our Rust libraries
 want us to create a `Font`, which requires us to load the contents of that
 font file into our application.
 
-We could do this on every request, which is what the PHP actually does. Or, we
+We could do this on every request, which I think is what the PHP does. Or, we
 could do one better and bake the font directly into our application with Rust's
 [`include_bytes!`][include_bytes] macro. I threw in the [`concat!`][concat] and
 [`env!`][env] macros as well for completeness.
@@ -541,7 +533,6 @@ async fn avatar(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> impl IntoResponse
 
 That handler will get us an image that looks something like this.
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
   <img style="height: 256px; width:256px;" src="no-newline.png" height="256" width="256" alt="TODO: Add blank canvas PNG">
 </div>
@@ -585,7 +576,6 @@ loose with concepts like [line height][leading], but seems to work out well
 enough. At last, we can reproduce the original PHP with output that looks
 something like this.
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
   <img style="height: 256px; width:256px;" src="with-newline.png" height="256" width="256" alt="TODO: Draw text on PNG">
 </div>
@@ -638,8 +628,8 @@ was built wrong seems acceptable for now, but we should fix all of our
 supporting libraries.
 
 ```bash
-$ cargo add anyhow@1.0.77
-$ cargo add thiserror@1.0.52
+$ cargo add anyhow@1.0.78
+$ cargo add thiserror@1.0.53
 ```
 
 #### Server Errors
@@ -790,7 +780,6 @@ $ curl -4 -O http://localhost:3000/avatar.png
 
 you're likely to see something like this.
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
   <img style="height: 256px; width:256px;" src="ipv4-mapped.png" height="256" width="256" alt="TODO: Draw text on PNG">
 </div>
@@ -810,27 +799,24 @@ more of a pain in the ass to deal with before that.
 
 IPv4 works again!
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
   <img style="height: 256px; width:256px;" src="localhost-ipv4.png" height="256" width="256" alt="TODO: Draw text on PNG">
 </div>
 
 IPv6 also works!
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
   <img style="height: 256px; width:256px;" src="localhost-ipv6.png" height="256" width="256" alt="TODO: Draw text on PNG">
 </div>
 
-#### Displaying IPv6 Correctly
-
 Haha, just kidding, it absolutely does not. Most IPv6 addresses are way longer
 than `::1`.
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
   <img style="height: 256px; width:256px;" src="bad-ipv6.png" height="256" width="256" alt="TODO: Draw text on PNG">
 </div>
+
+#### Displaying IPv6 Correctly
 
 Out of all the problems we've dealt with so far I think this is the thorniest.
 Unlike with the [newline issue](#handling-newlines), the text simply doesn't
@@ -840,7 +826,6 @@ canvas.
 
 Just decrease the font size, you might say...
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
   <img style="height: 256px; width:256px;" src="font-for-ants.png" height="256" width="256" alt="TODO: Draw text on PNG">
 </div>
@@ -851,7 +836,6 @@ promise.
 
 OK, well just make the PNG wider then!
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
   <img style="height: 256px; width:648px;" src="wide-boi.png" height="256" width="648" alt="TODO: Draw text on PNG">
 </div>
@@ -863,7 +847,6 @@ Additionally, it likely violates an original constraint that the image be 256 x
 
 Uhh... why are you making this so complicated? We did newlines before, wrap the text!
 
-`TODO: Fix image container. Figcaption?`
 <div style="display: flex; align-items: center; justify-content: center;">
   <img style="height: 256px; width:256px;" src="wrapped-text.png" height="256" width="256" alt="TODO: Draw text on PNG">
 </div>
@@ -968,7 +951,7 @@ I can't believe you read this far. The final code is available on
 everything I talked about in one place for comparision with the [PHP](#php).
 
 It's significantly longer than the original and probably more complicated than
-it needs to be, but it mostly works and that's worth something. 😆
+it needs to be, but it mostly works and that's worth something.
 
 ```rust
 use std::{io::Cursor, net::SocketAddr, sync::OnceLock};
@@ -984,23 +967,17 @@ use image::{ImageBuffer, ImageOutputFormat, Rgb};
 use imageproc::drawing::draw_text_mut;
 use rusttype::{Font, Scale};
 
-const WIDTH: u32 = 256;
-const HEIGHT: u32 = WIDTH;
-const BACKGROUND_COLOR: Rgb<u8> = Rgb([177, 98, 134]);
-
 const X: i32 = 8;
 const Y: i32 = 96;
-const SCALE: Scale = Scale { x: 32.0, y: 32.0 };
+const WIDTH: u32 = 256;
+const HEIGHT: u32 = WIDTH;
 const TEXT_COLOR: Rgb<u8> = Rgb([235, 219, 178]);
+const BACKGROUND_COLOR: Rgb<u8> = Rgb([177, 98, 134]);
+const SCALE: Scale = Scale { x: 32.0, y: 32.0 };
 const FONT_DATA: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/fonts/UbuntuMono-R.ttf"
 ));
-
-fn font() -> &'static Font<'static> {
-    static FONT: OnceLock<Font> = OnceLock::new();
-    FONT.get_or_init(|| Font::try_from_bytes(FONT_DATA).expect("Built-in font data was invalid"))
-}
 
 #[derive(Debug, thiserror::Error)]
 #[error("Failed to generate image: {0}")]
@@ -1012,10 +989,15 @@ impl IntoResponse for AvatarError {
     }
 }
 
+fn font() -> &'static Font<'static> {
+    static FONT: OnceLock<Font> = OnceLock::new();
+    FONT.get_or_init(|| Font::try_from_bytes(FONT_DATA).expect("Built-in font data was invalid"))
+}
+
 async fn avatar(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
 ) -> Result<impl IntoResponse, AvatarError> {
-    // Wow, IPv6 causes a lot of headache.
+    // Wow, IPv6 causes a lot of headache. 😵‍💫
     let ip = addr.ip().to_canonical();
     let mut img = ImageBuffer::from_pixel(WIDTH, HEIGHT, BACKGROUND_COLOR);
 
@@ -1060,7 +1042,6 @@ Thanks for reading! Maybe I'll learn to write smaller posts next year. 🤣
 [imagecreate_example]: https://www.php.net/manual/en/function.imagecreate.php#refsect1-function.imagecreate-examples
 [point]: https://en.wikipedia.org/wiki/Point_(typography)
 
-[finished production code]: TODO_TODO_TODO_TODO_TODO_TODO_TODO
 [The Book]: https://doc.rust-lang.org/book/
 [code golf]: https://en.wikipedia.org/wiki/Code_golf
 [Apache]: https://httpd.apache.org/
@@ -1111,6 +1092,7 @@ Thanks for reading! Maybe I'll learn to write smaller posts next year. 🤣
 [rusttype_font]: https://docs.rs/rusttype/0.9.3/rusttype/enum.Font.html
 [TrueType]: https://en.wikipedia.org/wiki/TrueType
 [rusttype]: https://docs.rs/rusttype/0.9.3/rusttype/index.html
+[ubuntu_mono]: https://design.ubuntu.com/font
 [include_bytes]: https://doc.rust-lang.org/std/macro.include_bytes.html
 [concat]: https://doc.rust-lang.org/std/macro.concat.html
 [env]: https://doc.rust-lang.org/std/macro.env.html
