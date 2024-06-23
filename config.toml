@@ -1,12 +1,10 @@
 title = "Reilly Tucker Siemens"
 description = "Tucker's website."
 base_url = "https://tuckersiemens.com"
-generate_categories_pages = false
-generate_tags_pages = false
-generate_feed = true
-feed_filename = "rss.xml"
-compile_sass = true
 minify_html = true
+compile_sass = true
+generate_feeds = true
+feed_filenames = ["rss.xml"]
 taxonomies = [
   { name = "tags", feed = false },
 ]
