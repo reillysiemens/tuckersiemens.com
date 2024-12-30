@@ -76,6 +76,13 @@ header {
   margin-right: 1em;
 }
 
+header > div.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 header > h1 {
   text-align: center;
   font-size: var(--header-font-size);
@@ -147,6 +154,11 @@ a {
 }
 
 /* ---- Media ---------------------------------------------------------------*/
+
+img.logo {
+  width: 64px;
+  height: 64px;
+}
 
 img, video {
   /* Media should fill the width of its container if possible. */
@@ -279,6 +291,14 @@ footer p, footer a {
   header {
     margin-left: 2.8em;
     margin-right: 2.8em;
+  }
+
+  header > div.logo {
+    flex-direction: row;
+  }
+
+  img.logo {
+    margin-right: 0.8em;
   }
 }
 

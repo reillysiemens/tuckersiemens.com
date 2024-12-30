@@ -31,7 +31,10 @@
     {% block content %}
       <main id="content">
         <header>
-          <h1>{{ section.title }}</h1>
+          <div class="logo">
+            <img class="logo" src="/logo.svg">
+            <h1>{{ section.title }}</h1>
+          </div>
         </header>
         {{ section.content | safe }}
       </main>
