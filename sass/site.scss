@@ -14,7 +14,7 @@
   --default-serif-font: "Noto Serif", serif;
   --default-sans-font: "Noto Sans", sans-serif;
   --default-mono-font: "Noto Sans Mono", monospace;
-  --default-font-size: 16px;
+  --default-font-size: 14px;
   --header-font-size: 2.0em;
   /* Not sure I like this as the default, but it keeps inline code blocks from
      overlapping. */
@@ -283,6 +283,10 @@ footer p, footer a {
 }
 
 /* ---- Media Queries ------------------------------------------------------ */
+
+@media(min-width: 427px) {
+  :root { --default-font-size: 16px }
+}
 
 @media(min-width: 470px) {
   :root { --default-font-size: 17px; }
