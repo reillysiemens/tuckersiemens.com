@@ -60,12 +60,18 @@ visible at the top of the frame.">
 </div>
 
 <div style="display: flex; align-items: center; justify-content: center;">
+  <div>
   <img src="graffiti-1.png" alt="The initials RTS in a graffiti style with a
 secondary color as a drop shadow.">
+</div>
+<div>
   <img src="graffiti-2.png" alt="The initials RTS in a graffiti style are
 centered in an oblong, lighter-colored hexagon.">
+</div>
+<div>
   <img src="encircled-hex-initials.png" alt="The initials RTS form a maze-like
 hexagon which is at the center of a circular outline.">
+</div>
 </div>
 
 # The Result
