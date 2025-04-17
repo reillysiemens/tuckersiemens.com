@@ -28,6 +28,7 @@ Enjoy! 🎷
 
 <style>
 td:nth-child(1) {
+  white-space: nowrap;
   vertical-align: top;
 }
 
@@ -334,7 +335,7 @@ td:nth-child(2) {
 
 |    Date    | Link                                                                                                                                                                                                                                                                                                                                                           |
 | :--------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2023-10-09 | [BLUE GIANT &amp; Official Trailer](https://www.youtube.com/watch?v=gUf5R-MzITU)                                                                                                                                                                                                                                                                               |
+| 2023-10-09 | [BLUE GIANT &#124; Official Trailer](https://www.youtube.com/watch?v=gUf5R-MzITU)                                                                                                                                                                                                                                                                               |
 | 2023-10-09 | [WaJazz: Japanese Jazz Spectacle Vol.II - Deep, Heavy and Beautiful Jazz from Japan 1962-1985 - The King Records Masters - Selected by Yusuke Ogawa (Universounds)](https://wajazz.bandcamp.com/album/wajazz-japanese-jazz-spectacle-vol-ii-deep-heavy-and-beautiful-jazz-from-japan-1962-1985-the-king-records-masters-selected-by-yusuke-ogawa-universounds) |
 | 2023-10-16 | [Synth-Pop, New Wave, Psych from Wales (Cymru) with Keltoi](https://www.youtube.com/watch?v=qLl3Zbhdq1k)                                                                                                                                                                                                                                                       |
 | 2023-10-31 | [Toccata and Fugue - Mike Hankinson](https://www.youtube.com/watch?v=6n9JTnxscdA)                                                                                                                                                                                                                                                                              |
