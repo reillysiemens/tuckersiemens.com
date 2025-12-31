@@ -2,7 +2,7 @@
 title = "Application Prohibited Internationally"
 description = "An API that won't work if you're in Portugal."
 url = "posts/application-prohibited-internationally"
-date = 2025-12-31T14:30:00-08:00
+date = 2025-12-31T15:24:00-08:00
 [taxonomies]
 tags = ["time", "i18n", "csharp", "dotnet"]
 +++
