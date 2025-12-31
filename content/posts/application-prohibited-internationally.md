@@ -144,8 +144,6 @@ was for me to uncover how it happened!
 
 # Means and Opportunity
 
-**TODO: Change these dates (either to the original or to the date of publication).**
-
 Luckily, I had access to both the client and server code for this API. I knew
 the routes that were involved from the client code, so I could explore freely
 with some idea of what I was looking for. I traced the path through the
@@ -165,7 +163,7 @@ In essence, what the public API did before calling the internal API was this.
 // ddd, dd MMM yyyy HH':'mm':'ss 'GMT'
 var RFC1123Pattern = DateTimeFormatInfo.InvariantInfo.RFC1123Pattern;
 
-// Sun, 23 Mar 2025 20:15:13 GMT
+// Wed, 31 Dec 2025 22:11:57 GMT
 var utcNow = DateTime.UtcNow.ToString(RFC1123Pattern);
 ```
 
@@ -181,6 +179,8 @@ Our problem was somewhere between these two calls. One to generate the
 timestamp, the other to parse it. But how? Neither API's code made any attempt
 to localize the timestamp. Neither API even handled the `Accept-Language`
 header that put me on this train of thought to begin with.
+
+# Whatever Remains, However Improbable
 
 C# and .NET are still somewhat foreign to me, so I had to do some homework. As
 it turns out, much has been written on the topic of parsing `DateTime`s in
@@ -210,7 +210,7 @@ culture and then try to parse it with `InvariantCulture` you're going to have a
 bad time.
 
 ```c#
-// domingo, 23 mar. 2025 20:15:13 GMT
+// quarta, 31 dez. 2025 22:11:57 GMT
 var portugueseCultureInfo = new CultureInfo("pt-PT");
 var portugueseNow = DateTime.UtcNow(RFC1123Pattern, portugueseCultureInfo);
 
@@ -308,9 +308,10 @@ influence). Understanding some of the resulting design decisions is as much
 archaeology as engineering.
 
 Timestamps aren't the only thing governed by culture. Certain translation of
-strings the user might see in the UI could be affected too. Having
-thread-specific culture opens the door for some bugs it likely closes the door
-on others and was probably convenient to manage centrally.
+strings the user might see in the UI could be affected too, such as whether to
+use `.` or `,` as a numerical separator. Having thread-specific culture opens
+the door for some bugs it likely closes the door on others and was probably
+convenient to manage centrally.
 
 If you started from scratch I'm sure there's a way that's more explicit, but
 the number of hours involved and the the number of other things that might
@@ -334,8 +335,8 @@ developer productivity for multi-threaded, graphical application programming.
 
 I suspect the intention was to create a pragmatic set of defaults which
 encourage the right behavior. The goal, as [Jeff Atwood] has talked about,
-should be "fall[ing] into the [The Pit of Success]", a phrase coined by a
-language designer at Microsoft. In this case it's far too easy to fall into
+should be "fall[ing] into the [The Pit of Success]" (a phrase coined by a
+language designer at Microsoft). In this case, it's far too easy to fall into
 "pit of despair" by choosing the simplest option.
 
 My personal assessment is that the framework designers only partially
@@ -379,215 +380,6 @@ May all your bugs be trivial and your machine-readable datetimes
 ```
 YYYY-MM-DDTHH:mm:ss.sssssssssZ/±HH:mm[time_zone_id][u-ca=calendar_id]
 ```
-
-Thanks for reading this far! Happy New Year! May your bugs be trivial and your
-timestamps ISO 8601.
-
-**TODO: END HERE**
-
-foo
-
-- Thread local (global?) state is the root of all evil?
-- Why does `DateTime.ToString()` rely on a global thread setting?
-- Why should one have to use the overload to specify `CultureInfo.InvariantCulture`?
-- The [`DateTime.ToString`](https://learn.microsoft.com/en-us/dotnet/api/system.datetime.tostring?view=net-9.0)
-  docs have a lot of culture-specific remarks that are almost too much
-  information with too few warnings.
-- It's easy to fall into the wrong pattern by choosing the simplest option.
-- Is the ultimate problem that the `DateTime.ToString` method hides necessary
-  complexity from the programmer and makes them think they're doing something
-  safe?
-- Why does the `System.DateTime` struct integrate with the
-  `System.Globalization` namespace in this way?
-- Datetimes and localization become tightly coupled.
-- Would using `DateTimeOffset` have helped in this case?
-
-## Would Rust be any better?
-
-Given my ardent advocacy for Rust over the last several years I was compelled
-to ask, would this would have gone better if we'd used Rust instead? After
-a few hours of noodling around with this I personally think the answer is yes.
-
-Rust's approach to this sort of thing differs greatly from .NET. In general its
-library ecosystem is younger and the standard library is intentionally leaner.
-[Frustratingly](https://kerkour.com/rust-stdx), this often means that libraries
-for certain domains are either less mature or less clearly supported. There's a
-[proposed RFC](https://github.com/rust-lang/rfcs/pull/3810) which hopes to
-address this, but it's _brand new_.
-
-On the flip side, this can be a blessing. Today, there's nothing in Rust that
-ties a global notion of locale to datetime libraries by default. Additionally,
-there isn't a datetime module in the standard library, only a
-[`time`](https://doc.rust-lang.org/std/time/index.html) module with structs
-like [`Duration`](https://doc.rust-lang.org/std/time/struct.Duration.html)
-and [`Instant`](https://doc.rust-lang.org/std/time/struct.Instant.html) for
-simple use cases.
-
-For complex datetime operations the Rust community enjoys a few high quality,
-["blessed"](https://blessed.rs/) crates.
-
-- [`time`](https://crates.io/crates/time) &mdash; Separate from `std::time`.
-  Haven't used it myself in years, but it's widely used. More limited in its
-  API.
-- [`chrono`](https://crates.io/crates/chrono) &mdash; The most heavily used of
-  the datetime libraries. I've relied on it a lot. Battle-tested, but more
-  complex in its API.
-- [`jiff`](https://crates.io/crates/jiff) &mdash; The youngest of the datetime
-  libraries. Inspired by [TC39](https://tc39.es/)'s modern
-  [Temporal Proposal](https://tc39.es/proposal-temporal/docs/). Aims to address
-  some of the gaps in `time` and `chrono`'s APIs.
-
-Despite being the newer entry I reached for `jiff` to evaluate Rust's
-capabilities. That decision was largely due to the legendary status of its
-primary author, Andrew Gallant (a.k.a.
-[burntsushi](https://burntsushi.net/about/)). Andrew has been shaping the Rust
-library ecosystem since its early days and is responsible for some of its most
-important crates.
-
-## The Pit of Success
-
-The documentation for `jiff` offers this description.
-
-> Jiff is a datetime library for Rust that encourages you to jump into the pit
-> of success.
-
-Given the circumstances
-[The Pit of Success](https://blog.codinghorror.com/falling-into-the-pit-of-success/)
-sounds desirable. It's also moderately humorous to me that the phrase
-originates from [a comment](https://learn.microsoft.com/en-us/archive/blogs/brada/the-pit-of-success)
-by a Microsoft researcher on language and API design. I wonder what they would
-think of the .NET API.
-
-So, how does `jiff` handle our scenario? Let's start with getting a timestamp.
-
-```rust
-use jiff::{Timestamp, tz::TimeZone};
-
-let now = Timestamp::now().to_zoned(TimeZone::UTC);
-```
-
-The documentation immediately leads us to understand the difference between a
-[Timestamp](https://docs.rs/jiff/0.2.13/jiff/struct.Timestamp.html) and a
-timezone aware [Zoned](https://docs.rs/jiff/0.2.13/jiff/struct.Zoned.html)
-value. Furthermore, it heavily encourages using the latter.
-
-A `Zoned` prints as an [RFC 9557](https://datatracker.ietf.org/doc/html/rfc9557)
-compliant string.
-
-```rust
-// 2025-05-17T22:02:07.134368889+00:00[UTC]
-println!("{now}");
-```
-
-This locale independent representation starkly contrasts with .NET's default.
-
-```c#
-// 05/17/2025 22:02:07
-var now = DateTime.UtcNow.ToString();
-Console.WriteLine(now);
-```
-
-[`DateTime.ToString`](https://learn.microsoft.com/en-us/dotnet/api/system.datetime.tostring?view=net-9.0)
-defaults to "using the formatting conventions of the current culture." There
-are overloads which accept specific formats, but if you naively convert a
-`DateTime` to a string you never know exactly what you'll get.
-
-`jiff` purposefully [punted](https://github.com/BurntSushi/jiff/issues/4) on
-locale support, acknowledging the "difficulty of the task" and that
-
-> ... all of the datetime string formats supported are "machine" readable interchange formats ...
-
-Instead, `jiff` points people towards the [`icu`](https://crates.io/crates/icu)
-internationalization library. More specifically, it encourages the use of the
-separate [`jiff-icu`](https://crates.io/crates/jiff-icu) crate for
-interoperability.
-
-## What if I need an RFC 1123 timestamp?
-
-In a reasonable world we could stop here. `jiff` lead us to the modern
-understanding of a good string representation for a machine readable datetime.
-Our original aim, after all, was to provide a timestamp for an internal API
-that is never read by humans.
-
-Maybe we're not so fortunate though. Maybe for reasons beyond our ken that
-internal API stubbornly insists on an RFC 1123 formatted value. What then?
-
-There's the
-[`strtime`](https://docs.rs/jiff/0.2.13/jiff/fmt/strtime/index.html)
-module and associated convenience methods for
-[`strptime`](https://pubs.opengroup.org/onlinepubs/009695399/functions/strptime.html)
-and
-[`strftime`](https://pubs.opengroup.org/onlinepubs/009695399/functions/strftime.html)
-style conversions.
-
-```rust
-use jiff::{Zoned, TimeZone, fmt::strtime};
-const RFC1123: &str = "%a, %d %b %Y %H:%M:%S GMT";
-
-let now = Timestamp::now().to_zoned(TimeZone::UTC);
-let formatted = strtime::format(RFC1123, &now)?;
-
-// Sat, 17 May 2025 22:02:07 GMT
-println!("{formatted}");
-```
-
-There are perils and some incorrectness here. **TODO**
-
-If you've got a bit more luck and your target actually accepts
-[RFC 2822](https://datatracker.ietf.org/doc/html/rfc2822) compliant values
-there's the
-[`rfc2822`](https://docs.rs/jiff/0.2.13/jiff/fmt/rfc2822/index.html)
-module which provides coversion utilities.
-
-```rust
-use jiff::{Timestamp, TimeZone, fmt::rfc2822};
-
-let now = Timestamp::now().to_zoned(TimeZone::UTC);
-let formatted = rfc2822::to_string(&now)?;
-
-// Sat, 17 May 2025 22:02:07 +0000
-println!("{formatted}");
-```
-
-It's worth mentioning that `jiff::fmt::rfc2822` also comes with a
-[warning](https://docs.rs/jiff/0.2.13/jiff/fmt/rfc2822/index.html#warning).
-
-> ... you should not choose it as a general interchange format for new
-> applications.
-
-At any rate, you can't end up with a string that contains locale-specific
-translations because the available APIs intentionally don't allow for it.
-
-## What if I need an internationalized RFC 1123 timestamp?
-
-First off, no you don't. Second, while it's _possible_ to generate this, doing
-so is so cumbersome that a reasonable person would probably question whether
-they're doing something wrong.
-
-<hr>
-
-## TODO
-
-What does AI default to when generating an RFC 1123 timestamp in C#?
-
-- Should I mention [`temporal_rs`](https://crates.io/crates/temporal_rs) that just came out a few days ago?
-
-- Ultimately the Rust approach requires you to be more specific and know more about datetimes.
-
-  - Can lead to errors when making the wrong choice.
-  - Makes sense for a systems programming language which wants to have as little baggage in the standard library as possible.
-  - Might not make sense for an application language like C#.
-
-- Specify versions of libraries used (e.g. `jiff@0.2.5`)
-
-- Rust might just not be ready for this yet. See [this issue](https://github.com/unicode-org/icu4x/issues/6180) from just 3 weeks ago.
-- Could I use `2.0.0-beta2`?
-- What is [Semantic Skeleta](https://unicode-org.atlassian.net/browse/CLDR-17842)?
-- Could that have prevented this problem? Was runtime dynamic behavior without compile-time checks for the semantic usage of the `R` flag with the `InvariantCulture` the issue?
-
-In the end, the best I can say is that had they been using Rust the
-programmer might have been exposed to enough information to give them the idea
-that using and RFC 1123 datetime was a poor choice to begin with.
 
 [time_falsehoods]: https://infiniteundo.com/post/25326999628/falsehoods-programmers-believe-about-time
 [api]: https://en.wikipedia.org/wiki/API
