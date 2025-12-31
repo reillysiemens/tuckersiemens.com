@@ -2,7 +2,7 @@
 title = "Application Prohibited Internationally"
 description = "An API that won't work if you're in Portugal."
 url = "posts/application-prohibited-internationally"
-date = 2025-12-28T14:14:00-08:00
+date = 2025-12-31T14:30:00-08:00
 [taxonomies]
 tags = ["time", "i18n", "csharp", "dotnet"]
 +++
@@ -281,8 +281,8 @@ require an RFC 1123 timestamp?
 Thankfully, they left a clue about their motivation in a comment next to their
 `DateTime.ParseExact` call. Paraphrasing a bit, it essentially said:
 
-> We have to use the `"R"` formatter because JavaScript's `Date.toUTCString`
-> gives dates like `Mon, 17  Apr 2006 21:22:48 GMT`.
+> We have to use the [`"R"` formatter][format_specifiers] because JavaScript's
+> `Date.toUTCString` gives dates like `Mon, 17  Apr 2006 21:22:48 GMT`.
 
 So, the devs were somehow bound to JavaScript's idea of what a datetime should
 be. In 2025 it's easy to be critical of such a decision, but that example date
@@ -294,10 +294,10 @@ distant relative. It's inspired by a [Java class][java_util_date] that was
 already deprecated in 1997. Also, [`Date.toISOString`][date_toisostring] wasn't
 introduced until ECMAScript 5 in 2009. If this code _was_ written in 2006,
 [`Temporal`][temporal] wouldn't be a [twinkle in someone's eye][maggiepint] for
-another decade, let alone a [TC39] proposal. If these devs were facing pressure
-from a front-end team to make their API accessible to JavaScript in 2006, then
-their options weren't great. At least they used the common glue of RFC 1123
-which was still a relevant standard.
+another decade, let alone a [TC39] proposal. Devs facing any pressure from a
+front-end team to make their API accessible to JavaScript in 2006 didn't have
+stellar options. At least they used the common glue of RFC 1123 which was still
+a relevant standard.
 
 ## Why Set the Thread Culture?
 
@@ -325,12 +325,12 @@ be the root of all evil?
 
 - Why does [`DateTime.ToString`][datetime_tostring] touch thread state?
 - Why use a method overload to opt into the stable `InvariantCulture`?
-- Why not have a stable default and opt into unstable `CurrentCulture`?
+- Why _not_ have a stable default and opt into unstable `CurrentCulture`?
 - Why integrate `System.DateTime` with the `System.Globalization` namespace?
 
 I have my quibbles with these design choices, but .NET has a storied history of
 being a successful choice for a lot of people. Especially if your goal is
-developer productivity for multi-threaded, graphical, application programming.
+developer productivity for multi-threaded, graphical application programming.
 
 I suspect the intention was to create a pragmatic set of defaults which
 encourage the right behavior. The goal, as [Jeff Atwood] has talked about,
@@ -346,13 +346,39 @@ warnings about the pitfalls.
 
 ## What Could the Devs Have Done Differently?
 
-- Linting ([CA1304](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1304) or [CA1305](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1305))
-- Mention `DateTimeOffset`?
-- Better, don't let JavaScript dictate the format of your internal timestamps.
-- Use ISO 8601
-- Or an even more modern RFC
+It's easy to criticize, but I should offer some constructive commentary as
+well. Knowing pitfalls exist in the framework, what could the devs have done
+differently? If you mention `DateTime` in a search you'll find plenty of
+results suggesting you use [`DateTimeOffset`][datetimeoffset] instead, but that
+actually has the same problem.
 
-<hr>
+The lowest hanging fruit is linting. In his blog post from 2008 Jeff Moser
+mentions two rules:
+
+- [CA1304] &mdash; Specify `CultureInfo`
+- [CA1305] &mdash; Specify `IFormatProvider`
+
+Those rules will catch you making the dangerous mistake of relying on the
+defaults and suggest you use the overloaded counterparts instead.
+
+The more difficult option is to resist the temptation to let JavaScript dictate
+which format you use to represent time. [RFC 3339] had been around for 4 years
+in 2006 and [ISO 8601] existed _**as early as 1988!**_ Those standards offer
+[a host of datetime formatting options][rfc3339_vs_iso8601] which should have
+let them sidestep culture-specific issues. `2025-12-31T22:11:57Z` is harder for
+a human to read than `Wed, 31 Dec 2025 22:11:57 GMT`, but a machine will parse
+it just fine and there's less room for error.
+
+If you're reading this after 2025, first, thanks for reading this far! Second,
+maybe go learn about timezone-aware datetimes. Check out [RFC 9557], read about
+the approach [Temporal][temporal] is taking to solve the problems of
+JavaScript's `Date`, and maybe peek at the
+[.NET docs on dates, times, and time zones][dates_times_and_time_zones].
+
+May all your bugs be trivial and your machine-readable datetimes
+```
+YYYY-MM-DDTHH:mm:ss.sssssssssZ/±HH:mm[time_zone_id][u-ca=calendar_id]
+```
 
 Thanks for reading this far! Happy New Year! May your bugs be trivial and your
 timestamps ISO 8601.
@@ -586,6 +612,7 @@ that using and RFC 1123 datetime was a poor choice to begin with.
 [Anglocentrism]: https://en.wikipedia.org/wiki/Anglocentrism
 [RFC 822]: https://datatracker.ietf.org/doc/html/rfc822#section-5
 [currentculture]: https://learn.microsoft.com/en-us/dotnet/api/system.threading.thread.currentculture
+[format_specifiers]: https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings#table-of-format-specifiers
 [RESTful]: https://en.wikipedia.org/wiki/REST
 [datetime_tostring]: https://learn.microsoft.com/en-us/dotnet/api/system.datetime.tostring?view=net-9.0
 [Jeff Atwood]: https://blog.codinghorror.com/falling-into-the-pit-of-success/
@@ -598,3 +625,11 @@ that using and RFC 1123 datetime was a poor choice to begin with.
 [temporal]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal
 [maggiepint]: https://maggiepint.com/2017/04/09/fixing-javascript-date-getting-started/
 [TC39]: https://tc39.es/
+[datetimeoffset]: https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset
+[CA1304]: https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1304
+[CA1305]: https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1305
+[RFC 3339]: https://datatracker.ietf.org/doc/html/rfc3339
+[ISO 8601]: https://www.iso.org/iso-8601-date-and-time-format.html
+[rfc3339_vs_iso8601]: https://ijmacd.github.io/rfc3339-iso8601/
+[RFC 9557]: https://datatracker.ietf.org/doc/html/rfc9557
+[dates_times_and_time_zones]: https://learn.microsoft.com/en-us/dotnet/standard/datetime/
