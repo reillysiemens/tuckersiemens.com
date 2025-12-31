@@ -4,14 +4,14 @@ description = "An API that won't work if you're in Portugal."
 url = "posts/application-prohibited-internationally"
 date = 2025-12-28T14:14:00-08:00
 [taxonomies]
-tags = ["time", "internationalization", "csharp", "dotnet", "rust"]
+tags = ["time", "i18n", "csharp", "dotnet"]
 +++
 
-At this point many programmers are accustomed to the idea that
+Many programmers are accustomed to the idea that
 [dealing with time is hard][time_falsehoods]. Despite that it's still quite
 easy for things to go awry, even when you think you're doing the right thing.
 This is the story of a bug report from Portugal that ended up being the most
-mysterious problem I solved at work recently.
+mysterious problem I've solved at work so far.
 
 <!-- more -->
 
@@ -22,9 +22,8 @@ tool. One day a user reported to us something like this:
 
 > Your tool works for me, but only if I delete this file after every use.
 
-I'll be darned if that didn't sound odd. Who would design such an application?
-Surely not us. Inquiring further we got some reproduction steps that amounted
-to
+Sounds odd. Who would design such an application? Surely not us.
+Inquiring further we got some reproduction steps that amounted to
 
 1. ✅ Run the tool. It works.
 2. ❌ Run the tool. It fails.
@@ -49,8 +48,8 @@ me in the right direction. The error message wasn't coming from our tool, but
 from an external service we interacted with.
 
 Ultimately I determined that when the user deleted their cache file it altered
-the program behavior to avoid an API call. When the cache file did exist we
-were making an extra API call to validate the cache contents. The
+the program behavior to avoid an [API][api] call. When the cache file did exist
+we were making an extra API call to validate the cache contents. The
 `Internal Error` came from that service. But why?
 
 # The Smoking Gun
@@ -64,7 +63,7 @@ undocumented, internal-only API. Furthermore, the internal API was not being
 used correctly. There was a stack trace with an error that said
 
 ```
-System.FormatException: String was not recognied as a valid DateTime
+System.FormatException: String was not recognized as a valid DateTime
 ```
 
 The value of said invalid string was
@@ -143,59 +142,224 @@ an English-speaking locale.
 I had demonstrated that this was indeed a server-side issue. All that remained
 was for me to uncover how it happened!
 
-# Means, Motive, and Opportunity
+# Means and Opportunity
 
-TODO: Pick up here next!
+**TODO: Change these dates (either to the original or to the date of publication).**
 
-<hr>
+Luckily, I had access to both the client and server code for this API. I knew
+the routes that were involved from the client code, so I could explore freely
+with some idea of what I was looking for. I traced the path through the
+server code from the initial [ASP.NET] controller entrypoint to the application
+logic.
 
-- TODO: Change these dates (either to the original or to the date of publication).
-- TODO: Note that it was an internal API generating the timestamp according to the culture.
+Along the way I discovered that it was actually the public API code that 
+called the internal API (which makes sense). The internal API required a
+timestamp as one of its arguments. Specifically, it required a timestamp
+formatted according to [RFC 1123] and the public API devs were only too happy
+to oblige.
+
+In essence, what the public API did before calling the internal API was this.
 
 ```c#
-using System.Globalization;
-
+// Timestamp generated in the public-facing API.
 // ddd, dd MMM yyyy HH':'mm':'ss 'GMT'
 var RFC1123Pattern = DateTimeFormatInfo.InvariantInfo.RFC1123Pattern;
 
 // Sun, 23 Mar 2025 20:15:13 GMT
 var utcNow = DateTime.UtcNow.ToString(RFC1123Pattern);
-Console.WriteLine(utcNow);
+```
 
-// Change the CultureInfo for this specific thread.
-Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-PT");
+Later, within the internal API code that timestamp was parsed from a string
+back into a [DateTime] like this.
 
+```c#
+// Timestamp received in the internal-only API.
+DateTime.ParseExact(utcNow, "R", CultureInfo.InvariantCulture);
+```
+
+Our problem was somewhere between these two calls. One to generate the
+timestamp, the other to parse it. But how? Neither API's code made any attempt
+to localize the timestamp. Neither API even handled the `Accept-Language`
+header that put me on this train of thought to begin with.
+
+C# and .NET are still somewhat foreign to me, so I had to do some homework. As
+it turns out, much has been written on the topic of parsing `DateTime`s in
+.NET. [Jeff Moser]'s [_Does Your Code Pass the Turkey Test?_][turkey_test]
+dives deep into the many thorny issues of [internationalization] and
+[Scott Hanselman]'s piece on the
+[subtlety of `DateTime.ParseExact`][datetime_parseexact] has this to say
+
+> ... `InvariantCulture` is almost always necessary when you’re working in a
+> non-UI context.
+
+[`InvariantCulture`][invariantculture] is .NET's way of handling
+> ... culture-sensitive string operations that are not affected by the
+> conventions of the current culture and that are consistent across cultures.
+
+This accurately describes how we want this timestamp parsing to work. The
+parsing is _potentially_ culture-sensitive, but we're working with a fixed
+format where days can only be expressed as `Mon`, `Tue`, etc. and months can
+only be expressed as `Jan`, `Feb`, etc. RFC 1123 inherits **strong**
+[Anglocentrism] from [RFC 822]. People were less concerned with
+[i18n][internationalization] in 1982 and 1989.
+
+The internal API code was using `InvariantCulture` to parse the timestamp, but
+the public API was not using it to generate the timestamp. Unfortunately, this
+left the door wide open for bugs. If you generate a `DateTime` in a specific
+culture and then try to parse it with `InvariantCulture` you're going to have a
+bad time.
+
+```c#
 // domingo, 23 mar. 2025 20:15:13 GMT
-var portugueseNow = DateTime.UtcNow.ToString(RFC1123Pattern);
-Console.WriteLine(portugueseNow);
+var portugueseCultureInfo = new CultureInfo("pt-PT");
+var portugueseNow = DateTime.UtcNow(RFC1123Pattern, portugueseCultureInfo);
 
-// Boom! 💣💥
+// 💣💥 Boom! This triggers a `System.FormatException`!
 DateTime.ParseExact(portugueseNow, "R", CultureInfo.InvariantCulture);
 ```
 
-# The Fix
+In our case though the developer hadn't written anything so obviously wrong.
+Rather, they'd written
 
 ```c#
-var portugueseNow = DateTime.UtcNow.ToString(RFC1123Pattern, CultureInfo.InvariantCulture);
+var now = DateTime.UtcNow.ToString(RFC1123Pattern);
 ```
+
+which seems innocuous at first glance. Sadly, passing an explicit culture to
+`ToString` is not the only way for a specific culture to end up in your string.
+
+
+Unbeknownst to the public API developer there was a dragon lurking at the top
+of the call stack. 
+
+```c#
+var currentCulture = new CultureInfo(request.Headers.AcceptLanguage);
+Thread.CurrentThread.CurrentCulture = currentCulture;
+```
+
+In a head-tilting design decision, someone had used
+[`Thread.CurrentThread.CurrentCulture`][currentculture] to set the culture for
+the **entire thread** based on the `Accept-Language` header in one of the
+controller base classes. This invisible decision was something like a
+half-dozen layers of inheritance removed from visibility for the public API
+devs, let alone the internal API.
+
+With that hidden footgun it's no longer safe to call
+`DateTime.UtcNow.ToString`! You could be generating a timestamp in any culture.
+Scott Hanselman's "almost always necessary" comment feels particularly astute
+in light of this.
+
+# Closing the Case
+
+I would have liked to tease apart the design decision to set culture at a
+thread level, but who knows what other house of cards behaviors that might have
+uncovered. The simplest, most surgical fix for this issue was to just generate
+the required timestamp using `InvariantCulture`.
+
+```c#
+var now = DateTime.UtcNow.ToString(RFC1123Pattern, CultureInfo.InvariantCulture);
+```
+
+I submitted a patch and the API team was happy to merge it. With that fix in
+place the public API ignored the thread-specific culture and always generated
+timestamps for the internal API with an English language format. Callers of the
+public API from Portugal, France, Germany, Japan, or China were now able to use
+it without the mysterious `TF400898: An Internal Error Occurred`.
 
 # Postmortem
 
-## Why did the devs use RFC1123?
+If you've followed the "Crimes with `DateTime`s" tale this far then, like me,
+you might have a **lot** of lingering questions. I'll do my best to answer the
+ones I can and leave the rest as a thought exercise for the reader.
 
-- JavaScript's [`Date.toUTCString()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toUTCString)
-- [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.1.1)
-- Presumably some calling code for another internal
+## Motive
 
-## How do these RFCs relate to one another?
+You might have noticed that I omitted motive from the title above. We found the
+means and the opportunity, but _why_ did the devs of the internal API choose to
+require an RFC 1123 timestamp?
 
-- [RFC 1123](https://datatracker.ietf.org/doc/rfc1123/) supercedes [RFC 822](https://datatracker.ietf.org/doc/html/rfc822#section-5).
+Thankfully, they left a clue about their motivation in a comment next to their
+`DateTime.ParseExact` call. Paraphrasing a bit, it essentially said:
 
-## Why did the devs set the culture on a thread level? What else could they have done?
+> We have to use the `"R"` formatter because JavaScript's `Date.toUTCString`
+> gives dates like `Mon, 17  Apr 2006 21:22:48 GMT`.
 
-- The number of other things that would likely break if this was changed is too high.
+So, the devs were somehow bound to JavaScript's idea of what a datetime should
+be. In 2025 it's easy to be critical of such a decision, but that example date
+in 2006 date should be our cue to have a little sympathy.
 
-## Why is .NET like this?
+JavaScript's [`Date`][date] is **notoriously** bad.
+[`Date.toUTCString`][date_tostring] follows [RFC 7231] which has RFC 1123 as a
+distant relative. It's inspired by a [Java class][java_util_date] that was
+already deprecated in 1997. Also, [`Date.toISOString`][date_toisostring] wasn't
+introduced until ECMAScript 5 in 2009. If this code _was_ written in 2006,
+[`Temporal`][temporal] wouldn't be a [twinkle in someone's eye][maggiepint] for
+another decade, let alone a [TC39] proposal. If these devs were facing pressure
+from a front-end team to make their API accessible to JavaScript in 2006, then
+their options weren't great. At least they used the common glue of RFC 1123
+which was still a relevant standard.
+
+## Why Set the Thread Culture?
+
+I have to speculate on this one, but the public API in question is many years
+old and heavily tied to a front-end UI. While largely [RESTful], the API and UI
+have grown in concert with each other (as evidenced by aforementioned JS
+influence). Understanding some of the resulting design decisions is as much
+archaeology as engineering.
+
+Timestamps aren't the only thing governed by culture. Certain translation of
+strings the user might see in the UI could be affected too. Having
+thread-specific culture opens the door for some bugs it likely closes the door
+on others and was probably convenient to manage centrally.
+
+If you started from scratch I'm sure there's a way that's more explicit, but
+the number of hours involved and the the number of other things that might
+break as a result is likely too high to justify the effort. As usual, it's
+tradeoffs all the way down.
+
+## Why Is .NET Like This?
+
+Now we enter the realm of questions for which I don't have answers. It seems
+trite at this point, but isn't mutable global (or thread-local) state known to
+be the root of all evil?
+
+- Why does [`DateTime.ToString`][datetime_tostring] touch thread state?
+- Why use a method overload to opt into the stable `InvariantCulture`?
+- Why not have a stable default and opt into unstable `CurrentCulture`?
+- Why integrate `System.DateTime` with the `System.Globalization` namespace?
+
+I have my quibbles with these design choices, but .NET has a storied history of
+being a successful choice for a lot of people. Especially if your goal is
+developer productivity for multi-threaded, graphical, application programming.
+
+I suspect the intention was to create a pragmatic set of defaults which
+encourage the right behavior. The goal, as [Jeff Atwood] has talked about,
+should be "fall[ing] into the [The Pit of Success]", a phrase coined by a
+language designer at Microsoft. In this case it's far too easy to fall into
+"pit of despair" by choosing the simplest option.
+
+My personal assessment is that the framework designers only partially
+succeeded. `DateTime.ToString` is hiding complexity from the programmer that
+lulls them into a false sense of safety. The docs for that method have a lot of
+culture-specific remarks that are almost too much information with too few
+warnings about the pitfalls.
+
+## What Could the Devs Have Done Differently?
+
+- Linting ([CA1304](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1304) or [CA1305](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1305))
+- Mention `DateTimeOffset`?
+- Better, don't let JavaScript dictate the format of your internal timestamps.
+- Use ISO 8601
+- Or an even more modern RFC
+
+<hr>
+
+Thanks for reading this far! Happy New Year! May your bugs be trivial and your
+timestamps ISO 8601.
+
+**TODO: END HERE**
+
+foo
 
 - Thread local (global?) state is the root of all evil?
 - Why does `DateTime.ToString()` rely on a global thread setting?
@@ -400,6 +564,7 @@ programmer might have been exposed to enough information to give them the idea
 that using and RFC 1123 datetime was a poor choice to begin with.
 
 [time_falsehoods]: https://infiniteundo.com/post/25326999628/falsehoods-programmers-believe-about-time
+[api]: https://en.wikipedia.org/wiki/API
 [correlation ID]: https://microsoft.github.io/code-with-engineering-playbook/observability/correlation-id/
 [500 Internal Server Error]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/500
 [percent encoding]: https://en.wikipedia.org/wiki/Percent-encoding
@@ -409,3 +574,27 @@ that using and RFC 1123 datetime was a poor choice to begin with.
 [accept_language]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Accept-Language
 [curl]: https://en.wikipedia.org/wiki/CURL
 [language tag]: https://en.wikipedia.org/wiki/IETF_language_tag
+[ASP.NET]: https://en.wikipedia.org/wiki/ASP.NET
+[RFC 1123]: https://datatracker.ietf.org/doc/rfc1123/
+[DateTime]: https://learn.microsoft.com/en-us/dotnet/api/system.datetime
+[Jeff Moser]: https://www.moserware.com/about/
+[turkey_test]: https://www.moserware.com/2008/02/does-your-code-pass-turkey-test.html
+[internationalization]: https://en.wikipedia.org/wiki/Internationalization_and_localization
+[Scott Hanselman]: https://www.hanselman.com/about
+[datetime_parseexact]: https://www.hanselman.com/blog/dateparseexact-and-the-subtle-goo-that-is-datetime-format-strings
+[invariantculture]: https://learn.microsoft.com/en-us/dotnet/fundamentals/runtime-libraries/system-globalization-cultureinfo-invariantculture
+[Anglocentrism]: https://en.wikipedia.org/wiki/Anglocentrism
+[RFC 822]: https://datatracker.ietf.org/doc/html/rfc822#section-5
+[currentculture]: https://learn.microsoft.com/en-us/dotnet/api/system.threading.thread.currentculture
+[RESTful]: https://en.wikipedia.org/wiki/REST
+[datetime_tostring]: https://learn.microsoft.com/en-us/dotnet/api/system.datetime.tostring?view=net-9.0
+[Jeff Atwood]: https://blog.codinghorror.com/falling-into-the-pit-of-success/
+[The Pit of Success]: https://learn.microsoft.com/en-us/archive/blogs/brada/the-pit-of-success
+[date]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
+[date_tostring]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toUTCString
+[java_util_date]: https://docs.oracle.com/javase/8/docs/api/java/util/Date.html
+[RFC 7231]: https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.1.1
+[date_toisostring]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
+[temporal]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal
+[maggiepint]: https://maggiepint.com/2017/04/09/fixing-javascript-date-getting-started/
+[TC39]: https://tc39.es/
